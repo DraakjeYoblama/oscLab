@@ -1,10 +1,8 @@
-#include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <stdbool.h>
-#include <time.h>
 #include <string.h>
 #include <wait.h>
+#include <ctype.h>
 #include <sys/types.h>
 
 
@@ -32,8 +30,17 @@ int main() {
         close(fd1[1]);
 
         char message1[50];
-        char message2[50] = "Test Test";
+        char message2[50];
         read(fd1[0], message1, 50);
+
+        for (int i=0; i<strlen(message1); i++) {
+            if (islower(message1[i]) == 0) {
+                message2[i] = tolower(message1[i]);
+            } else {
+                message2[i] = toupper(message1[i]);
+            }
+        }
+        message2[strlen(message1)+1] = '\0';
 
 
         close(fd1[0]);
@@ -45,7 +52,7 @@ int main() {
 
     } else if (pid>0) {
         // parent
-        char* message1 = "Hi There";
+        char* message1 = "Hi There6";
         char message2[50];
         close(fd1[0]);
         write(fd1[1], message1, strlen(message1)+1);
