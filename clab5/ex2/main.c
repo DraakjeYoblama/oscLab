@@ -48,6 +48,8 @@ int main() {
 
         write(fd2[1], message2, strlen(message2)+1);
         close(fd2[1]);
+        
+        exit(0); //not tested
 
 
     } else if (pid>0) {
