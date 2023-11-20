@@ -8,9 +8,9 @@ FILE * open_db(char * filename, bool append) {
     FILE* fp;
 
     if (!append) {
-        fp = fopen(filename, "w+"); // replace file
+        fp = fopen(filename, "w"); // replace file
     } else {
-        fp = fopen(filename, "a+"); //append to existing file
+        fp = fopen(filename, "a"); //append to existing file
     }
 
     return fp;
