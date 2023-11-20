@@ -63,9 +63,17 @@ int create_log_process() {
 }
 
 int end_log_process() {
-    return kill(pid, 0);
-    //close(fd1[0]);
-    //close(fd1[1]);
-    //exit(0);
+    if (pid>0) {
+        // parent
+        close(fd1[0]);
+        close(fd1[1]);
+
+    } else if (pid==0) {
+        fclose(logname);
+        close(fd1[0]);
+        close(fd1[1]);
+        exit(0);
+    }
+    return 0;
 }
 
