@@ -25,7 +25,7 @@ int insert_sensor(FILE * f, sensor_id_t id, sensor_value_t value, sensor_ts_t ts
 
 int close_db(FILE * f){
     fclose(f);
-    write_to_log_process("Data file closed."); //should this be part of end_log_process?
+    write_to_log_process("Data file closed.");
     end_log_process();
     return 0;
 }
