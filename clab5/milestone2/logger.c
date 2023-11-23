@@ -67,6 +67,7 @@ int end_log_process() {
         // parent
         close(fd1[0]);
         close(fd1[1]);
+        wait(NULL);
 
     } else if (pid==0) {
         fclose(logname);
