@@ -2,10 +2,10 @@
 //#include <stdlib.h>
 #include <string.h>
 //#include <sys/types.h>
-//#include <sys/wait.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include<time.h>
-#include<signal.h>
+//#include<signal.h>
 
 #include "logger.h"
 
@@ -20,12 +20,13 @@ int write_to_log_process(char *msg){
 
     if (pid>0) {
         // parent
-        write(fd1[1], msg, strlen(msg)+1);
+        write(fd1[1], msg, 25);
+
     } else if (pid==0) {
         time_t now;
-        char message1[30];
+        char message1[25];
         time(&now);
-        read(fd1[0], message1, 30);
+        read(fd1[0], message1, 25);
         fprintf(logname, "%d - %.24s - %s\n", logcounter, ctime(&now), message1);
         logcounter++;
     }
@@ -65,9 +66,9 @@ int create_log_process() {
 int end_log_process() {
     if (pid>0) {
         // parent
+        wait(NULL);
         close(fd1[0]);
         close(fd1[1]);
-        wait(NULL);
 
     } else if (pid==0) {
         fclose(logname);
