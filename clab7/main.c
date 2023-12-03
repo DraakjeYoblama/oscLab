@@ -7,14 +7,18 @@
 #include <pthread.h>
 
 #include "main.h"
+#include "sbuffer.h"
+#include "config.h"
 
 
 int main() {
+    sbuffer_t **buffer = NULL;
     pthread_t thread1, thread2;
     int iret1, iret2;
+    //TODO: sbuffer_init(buffer);
 
     iret1 = pthread_create(&thread1, NULL, reader, NULL);
-    iret1 = pthread_create(&thread1, NULL, reader, NULL);
+    //iret2 = pthread_create(&thread2, NULL, reader, NULL);
 
     // parent (writer thread)
     FILE *fp;
@@ -35,7 +39,7 @@ int main() {
 
         // Print file content
         if (!feof(fp)) {
-            printf("%d %lf %ld\n", sensor_id, sensor_temperature, starttime);
+            printf("%d, %lf, %ld\n", sensor_id, sensor_temperature, starttime);
         } else {
             printf("%d", 0);
         }
@@ -49,6 +53,17 @@ int main() {
 
 void *reader() {
     // children (reader threads)
-    printf("I'm a child--------------------------------------\n");
+    FILE *csv;
+    csv = fopen("sensor_data_out.csv", "w");
+
+    //TODO: sbuffer_free(sbuffer_t **buffer);
+
+    // get data from buffer
+    // write data to sensor_data_out.csv
+    fprintf(csv, "Hello");
+
+
+    usleep(25000);
+    fclose(csv);
     return NULL;
 }
