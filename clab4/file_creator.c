@@ -45,10 +45,10 @@ int main(int argc, char *argv[]) {
     fp_bin = fopen("sensor_data", "w");
     FILE_ERROR(fp_bin, "Couldn't create sensor_data\n");
 
-#ifdef DEBUG // save sensor data also in text format for test purposes
+//#ifdef DEBUG // save sensor data also in text format for test purposes
     fp_text = fopen("sensor_data_text", "w");
     FILE_ERROR(fp_text,"Couldn't create sensor_data in text\n");
-#endif
+//#endif
 
     for (i = 0; i < NUM_MEASUREMENTS; i++, starttime += SLEEP_TIME) {
         for (j = 0; j < NUM_SENSORS; j++) {
@@ -56,9 +56,9 @@ int main(int argc, char *argv[]) {
             fwrite(sensor_id + j, sizeof(sensor_id[0]), 1, fp_bin);
             fwrite(&(sensor_temperature[j]), sizeof(sensor_temperature[0]), 1, fp_bin);
             fwrite(&starttime, sizeof(time_t), 1, fp_bin);
-#ifdef DEBUG
+//#ifdef DEBUG
             fprintf(fp_text,"%" PRIu16 " %g %ld\n", sensor_id[j],sensor_temperature[j],(long)starttime);
-#endif
+//#endif
 
             // get new temperature: still needs some fine-tuning ...
             sensor_temperature[j] = sensor_temperature[j] + TEMP_DEV * ((drand48() - 0.5) / 10);
@@ -66,9 +66,9 @@ int main(int argc, char *argv[]) {
     }
 
     fclose(fp_bin);
-#ifdef DEBUG
+//#ifdef DEBUG
     fclose(fp_text);
-#endif
+//#endif
 
     return 0;
 }
