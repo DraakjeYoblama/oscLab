@@ -40,4 +40,6 @@ int sbuffer_remove(sbuffer_t *buffer, sensor_data_t *data);
 */
 int sbuffer_insert(sbuffer_t *buffer, sensor_data_t *data);
 
+int sbuffer_cond();
+
 #endif  //_SBUFFER_H_
