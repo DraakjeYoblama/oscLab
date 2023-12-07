@@ -37,6 +37,7 @@ int sbuffer_free(sbuffer_t **buffer) {
         pthread_mutex_unlock(&buffermutex);
         return SBUFFER_FAILURE;
     }
+    (*buffer)->head = (*buffer)->tail = NULL; // remove end marker (0)
     while ((*buffer)->head) {
         dummy = (*buffer)->head;
         (*buffer)->head = (*buffer)->head->next;
@@ -49,7 +50,7 @@ int sbuffer_free(sbuffer_t **buffer) {
     return SBUFFER_SUCCESS;
 }
 
-int sbuffer_remove(sbuffer_t *buffer, sensor_data_t *data) {
+int sbuffer_remove(sbuffer_t *buffer, sensor_data_t *data) { //TODO: make this blocking if buffer is empty using pthreads condition variables
     pthread_mutex_lock(&buffermutex);
     sbuffer_node_t *dummy;
     if (buffer == NULL) {
@@ -64,7 +65,7 @@ int sbuffer_remove(sbuffer_t *buffer, sensor_data_t *data) {
     dummy = buffer->head;
     if (buffer->head->data.id == 0) //end marker
     {
-        // do nothing
+        // don't remove end marker to make sure every thread sees it
     } else if (buffer->head == buffer->tail) // buffer has only one node
     {
         buffer->head = buffer->tail = NULL;
@@ -82,7 +83,7 @@ int sbuffer_insert(sbuffer_t *buffer, sensor_data_t *data) {
     sbuffer_node_t *dummy;
     if (buffer == NULL) {
         pthread_mutex_unlock(&buffermutex);
-        return 11;// SBUFFER_FAILURE;
+        return SBUFFER_FAILURE;
     }
     dummy = malloc(sizeof(sbuffer_node_t));
     if (dummy == NULL) {

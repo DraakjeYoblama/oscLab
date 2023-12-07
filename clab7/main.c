@@ -7,7 +7,6 @@
 #include "config.h"
 #include "main.h"
 
-pthread_mutex_t csvmutex;
 
 FILE* csv;
 
@@ -18,7 +17,6 @@ int main() {
     pthread_t thread1, thread2;
 
     csv = fopen("sensor_data_out.csv", "w");
-    pthread_mutex_init(&csvmutex, NULL);
     //start threads
     pthread_create(&thread1, NULL, reader, *myBuffer);
     pthread_create(&thread2, NULL, reader, *myBuffer);
@@ -63,24 +61,20 @@ void *reader(void* buffer) {
     // children (reader threads)
 
     sensor_data_t received_data;
-    usleep(25000);
 
     while (1) {
+        usleep(25000);
         // get data from buffer
         sbuffer_remove(buffer, &received_data);
 
         // write data to sensor_data_out.csv
         if (received_data.id!=0) {
-            //printf("%lu: %d, %lf, %ld\n",pthread_self(), received_data.id, received_data.value, received_data.ts);
+            printf("%lu: %d, %lf, %ld\n",pthread_self(), received_data.id, received_data.value, received_data.ts);
 
-            pthread_mutex_lock(&csvmutex);
             fprintf(csv, "%d, %lf, %ld\n", received_data.id, received_data.value, received_data.ts);
-            pthread_mutex_unlock(&csvmutex);
         } else {
             break;
         }
-
-        usleep(25000);
     }
     return NULL;
 }
