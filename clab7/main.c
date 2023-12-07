@@ -1,7 +1,4 @@
 #include <stdio.h>
-//#include <stdint.h>
-//#include <inttypes.h>
-//#include <time.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <pthread.h>
@@ -16,15 +13,15 @@ FILE* csv;
 
 
 int main() {
-    sbuffer_t** myBuffer = malloc(sizeof(*myBuffer));
+    sbuffer_t** myBuffer = malloc(8);
     sbuffer_init(myBuffer);
     pthread_t thread1, thread2;
 
     csv = fopen("sensor_data_out.csv", "w");
     pthread_mutex_init(&csvmutex, NULL);
     //start threads
-    pthread_create(&thread1, NULL, reader, myBuffer);
-    pthread_create(&thread2, NULL, reader, myBuffer);
+    pthread_create(&thread1, NULL, reader, *myBuffer);
+    pthread_create(&thread2, NULL, reader, *myBuffer);
 
 
     // parent (writer thread)
@@ -43,7 +40,7 @@ int main() {
 
         // Insert data entry into buffer
         if (!feof(fp)) {
-            printf("insert: %d ", sbuffer_insert(*myBuffer, &sensor_data));
+            sbuffer_insert(*myBuffer, &sensor_data);
             //printf("%d, %lf, %ld\n", sensor_data.id, sensor_data.value, sensor_data.ts);
         } else {
             sensor_data.id = 0;
@@ -66,7 +63,7 @@ void *reader(void* buffer) {
     // children (reader threads)
 
     sensor_data_t received_data;
-    printf( "i am a surgeon");
+    usleep(25000);
 
     while (1) {
         // get data from buffer
@@ -74,11 +71,10 @@ void *reader(void* buffer) {
 
         // write data to sensor_data_out.csv
         if (received_data.id!=0) {
-            printf("child: %d, %lf, %ld\n", received_data.id, received_data.value, received_data.ts);
+            //printf("%lu: %d, %lf, %ld\n",pthread_self(), received_data.id, received_data.value, received_data.ts);
 
             pthread_mutex_lock(&csvmutex);
-            printf("gotteem");
-            //fprintf(csv, "%d, %lf, %ld\n", received_data.id, received_data.value, received_data.ts);
+            fprintf(csv, "%d, %lf, %ld\n", received_data.id, received_data.value, received_data.ts);
             pthread_mutex_unlock(&csvmutex);
         } else {
             break;
@@ -86,6 +82,5 @@ void *reader(void* buffer) {
 
         usleep(25000);
     }
-
     return NULL;
 }
