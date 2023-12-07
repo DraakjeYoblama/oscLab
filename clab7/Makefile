@@ -3,3 +3,7 @@ zip:
 
 all:
 	gcc *.c -o main.out -lpthread
+
+debug:
+	gcc *.c -o main.out -lpthread -g
+	gdb ./main.out

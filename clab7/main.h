@@ -5,7 +5,11 @@
 #ifndef CLAB7_MAIN_H
 #define CLAB7_MAIN_H
 
-#endif //CLAB7_MAIN_H
+#include "sbuffer.h"
 
 int main();
-void *reader();
+//void *reader(sbuffer_t **buffer);
+
+
+#endif //CLAB7_MAIN_H
+
