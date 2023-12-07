@@ -10,25 +10,28 @@
 #include "config.h"
 #include "main.h"
 
+pthread_mutex_t csvmutex;
+
+FILE* csv;
+
 
 int main() {
     sbuffer_t** myBuffer = malloc(sizeof(*myBuffer));
     sbuffer_init(myBuffer);
     pthread_t thread1, thread2;
-    int iret1, iret2;
 
-    sbuffer_free(myBuffer);
+    csv = fopen("sensor_data_out.csv", "w");
+    pthread_mutex_init(&csvmutex, NULL);
+    //start threads
+    pthread_create(&thread1, NULL, reader, myBuffer);
+    pthread_create(&thread2, NULL, reader, myBuffer);
 
-    //iret1 = pthread_create(&thread1, NULL, reader, myBuffer); //TODO: make mutithreading work
-    //iret2 = pthread_create(&thread2, NULL, reader, NULL);
 
     // parent (writer thread)
     FILE *fp;
-
     // Open a file in read mode
     fp = fopen("sensor_data", "r");
 
-    // Store the content of the file
     sensor_data_t sensor_data;
 
     while (!feof(fp)) {
@@ -37,9 +40,10 @@ int main() {
         fread(&sensor_data.value, 8, 1, fp);
         fread(&sensor_data.ts, 8, 1, fp);
 
-        // Print file content
+
+        // Insert data entry into buffer
         if (!feof(fp)) {
-            sbuffer_insert(*myBuffer, &sensor_data);
+            printf("insert: %d ", sbuffer_insert(*myBuffer, &sensor_data));
             //printf("%d, %lf, %ld\n", sensor_data.id, sensor_data.value, sensor_data.ts);
         } else {
             sensor_data.id = 0;
@@ -49,28 +53,39 @@ int main() {
         usleep(10000);
     }
     // Close the file
+    pthread_join(thread1, NULL);
+    pthread_join(thread2, NULL);
+    fclose(csv);
     sbuffer_free(myBuffer);
     free(myBuffer);
     fclose(fp);
     return 0;
 }
 
-void *reader(sbuffer_t **buffer) {
+void *reader(void* buffer) {
     // children (reader threads)
-    FILE* csv;
+
     sensor_data_t received_data;
-    csv = fopen("sensor_data_out.csv", "w");
+    printf( "i am a surgeon");
 
     while (1) {
-        sbuffer_remove(*buffer, &received_data); //TODO: make this not an infinite loop
-
         // get data from buffer
+        sbuffer_remove(buffer, &received_data);
+
         // write data to sensor_data_out.csv
-        fprintf(csv, "%d, %lf, %ld\n", received_data.id, received_data.value, received_data.ts);;
+        if (received_data.id!=0) {
+            printf("child: %d, %lf, %ld\n", received_data.id, received_data.value, received_data.ts);
+
+            pthread_mutex_lock(&csvmutex);
+            printf("gotteem");
+            //fprintf(csv, "%d, %lf, %ld\n", received_data.id, received_data.value, received_data.ts);
+            pthread_mutex_unlock(&csvmutex);
+        } else {
+            break;
+        }
 
         usleep(25000);
     }
 
-    fclose(csv);
     return NULL;
 }
