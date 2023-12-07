@@ -12,10 +12,10 @@
 
 
 int main() {
-    sbuffer_t **buffer = NULL;
+    sbuffer_t **myBuffer = NULL;
     pthread_t thread1, thread2;
     int iret1, iret2;
-    //TODO: sbuffer_init(buffer);
+    sbuffer_init(myBuffer); //TODO
 
     iret1 = pthread_create(&thread1, NULL, reader, NULL);
     //iret2 = pthread_create(&thread2, NULL, reader, NULL);
@@ -27,19 +27,18 @@ int main() {
     fp = fopen("sensor_data", "r");
 
     // Store the content of the file
-    uint16_t sensor_id;
-    double sensor_temperature;
-    time_t starttime;
+    sensor_data_t sensor_data;
 
     while (!feof(fp)) {
         // Read the content and store it inside buffer
-        fread(&sensor_id, 2, 1, fp);
-        fread(&sensor_temperature, 8, 1, fp);
-        fread(&starttime, 8, 1, fp);
+        fread(&sensor_data.id, 2, 1, fp);
+        fread(&sensor_data.value, 8, 1, fp);
+        fread(&sensor_data.ts, 8, 1, fp);
 
         // Print file content
         if (!feof(fp)) {
-            printf("%d, %lf, %ld\n", sensor_id, sensor_temperature, starttime);
+            sbuffer_insert(&myBuffer, &sensor_data); //TODO
+            //printf("%d, %lf, %ld\n", sensor_data.id, sensor_data.value, sensor_data.ts);
         } else {
             printf("%d", 0);
         }
@@ -56,11 +55,11 @@ void *reader() {
     FILE *csv;
     csv = fopen("sensor_data_out.csv", "w");
 
-    //TODO: sbuffer_free(sbuffer_t **buffer);
+    sbuffer_remove(myBuffer, sensor_data); //TODO
 
     // get data from buffer
     // write data to sensor_data_out.csv
-    fprintf(csv, "Hello");
+    fprintf(csv, "%d, %lf, %ld\n", sensor_data.id, sensor_data.value, sensor_data.ts);;
 
 
     usleep(25000);
