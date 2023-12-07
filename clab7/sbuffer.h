@@ -1,7 +1,3 @@
-/**
- * \author {AUTHOR}
- */
-
 #ifndef _SBUFFER_H_
 #define _SBUFFER_H_
 
