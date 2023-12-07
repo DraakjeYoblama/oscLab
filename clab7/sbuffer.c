@@ -62,7 +62,10 @@ int sbuffer_remove(sbuffer_t *buffer, sensor_data_t *data) {
     }
     *data = buffer->head->data;
     dummy = buffer->head;
-    if (buffer->head == buffer->tail) // buffer has only one node
+    if (buffer->head->data.id == 0) //end marker
+    {
+        // do nothing
+    } else if (buffer->head == buffer->tail) // buffer has only one node
     {
         buffer->head = buffer->tail = NULL;
     } else  // buffer has many nodes empty
@@ -79,7 +82,7 @@ int sbuffer_insert(sbuffer_t *buffer, sensor_data_t *data) {
     sbuffer_node_t *dummy;
     if (buffer == NULL) {
         pthread_mutex_unlock(&buffermutex);
-        return SBUFFER_FAILURE;
+        return 11;// SBUFFER_FAILURE;
     }
     dummy = malloc(sizeof(sbuffer_node_t));
     if (dummy == NULL) {
