@@ -45,11 +45,15 @@ int main() {
             sbuffer_insert(*myBuffer, &sensor_data);
         }
 
-        usleep(10000);
+        usleep(10000); //10 millisec
     }
-    // Close the file
+
+    sbuffer_cond();
+    sbuffer_cond();
     pthread_join(thread1, NULL);
     pthread_join(thread2, NULL);
+
+    // Close the file
     fclose(csv);
     sbuffer_free(myBuffer);
     free(myBuffer);
@@ -63,17 +67,18 @@ void *reader(void* buffer) {
     sensor_data_t received_data;
 
     while (1) {
-        usleep(25000);
+        usleep(25000); //25 millisec
         // get data from buffer
-        sbuffer_remove(buffer, &received_data);
+        if (sbuffer_remove(buffer, &received_data) == 0) {
 
-        // write data to sensor_data_out.csv
-        if (received_data.id!=0) {
-            printf("%lu: %d, %lf, %ld\n",pthread_self(), received_data.id, received_data.value, received_data.ts);
+            // write data to sensor_data_out.csv
+            if (received_data.id != 0) {
+                printf("%lu: %d, %lf, %ld\n", pthread_self(), received_data.id, received_data.value, received_data.ts);
 
-            fprintf(csv, "%d, %lf, %ld\n", received_data.id, received_data.value, received_data.ts);
-        } else {
-            break;
+                fprintf(csv, "%d, %lf, %ld\n", received_data.id, received_data.value, received_data.ts);
+            } else {
+                break;
+            }
         }
     }
     return NULL;
