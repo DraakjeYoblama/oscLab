@@ -1,5 +1,5 @@
 
-// TODO: this file is just copied over from milestone 2, make it correct and fix bugs
+// TODO: this file is just copied over from milestone2/clab5/plab2, make it correct and fix bugs
 
 /**
  * \author Bert Lagaisse

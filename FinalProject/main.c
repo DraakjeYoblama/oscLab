@@ -1,5 +1,5 @@
 
-// TODO: this file is just copied over from milestone 2 (logger.c), make it correct and fix bugs
+// TODO: the next part is just copied over from milestone 2/plab2/clab5 (logger.c), make it correct and fix bugs
 
 #include <stdio.h>
 //#include <stdlib.h>
@@ -17,6 +17,11 @@ int fd1[2];
 pid_t pid;
 int logcounter;
 FILE* logname;
+
+int main() {
+
+    return 0;
+}
 
 
 int write_to_log_process(char *msg){

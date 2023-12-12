@@ -1,5 +1,5 @@
 
-// TODO: this file is just copied over from milestone 1, make it correct and fix bugs
+// TODO: this file is just copied over from milestone1/clab3, make it correct and fix bugs
 
 #include <stdlib.h>
 #include <stdio.h>
