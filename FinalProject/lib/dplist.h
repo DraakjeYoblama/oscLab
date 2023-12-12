@@ -1,7 +1,3 @@
-/**
- * \author {AUTHOR}
- */
-
 #ifndef _DPLIST_H_
 #define _DPLIST_H_
 
