@@ -1,5 +1,5 @@
 
-// TODO: this file is just copied over from milestone 3, make it correct and fix bugs
+// TODO: this file is just copied over from milestone3/clab7/plab4, make it correct and fix bugs
 
 #ifndef _SBUFFER_H_
 #define _SBUFFER_H_
