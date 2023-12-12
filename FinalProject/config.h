@@ -1,7 +1,3 @@
-/**
- * \author {AUTHOR}
- */
-
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
@@ -19,3 +15,14 @@ typedef struct {
 } sensor_data_t;
 
 #endif /* _CONFIG_H_ */
+
+// TODO: the next part is just copied over from milestone 2 (logger.h), make it correct and fix bugs
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int write_to_log_process(char *msg);
+int create_log_process();
+int end_log_process();
+
+#endif
