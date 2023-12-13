@@ -6,9 +6,6 @@
 #include <assert.h>
 #include "dplist.h"
 
-
-
-
 /*
  * The real definition of struct list / struct node
  */
@@ -45,14 +42,18 @@ dplist_t *dpl_create(// callback functions
 
 void dpl_free(dplist_t **list, bool free_element) {
     int size = dpl_size(*list);
-    if (size > 0) {
-        for (int index = size-1; index<=0; index--) {
+    if (size == 0) {
+        //free((*list)->head);
+        //free((*list)->element_copy);
+        //free((*list)->element_free);
+        //free((*list)->element_compare);
+    } else if (size > 0) {
+        for (int index = size-1; index>=0; index--) {
             dpl_remove_at_index(*list, index, free_element);
         }
     }
-    //free((*list)->head);
-    //list = NULL;
     free(*list);
+    *list = NULL; // TODO: I think this is the source of the memory leaks
 
 }
 

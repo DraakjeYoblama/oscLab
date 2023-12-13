@@ -39,18 +39,13 @@ dplist_t *dpl_create(// callback functions
 
 void dpl_free(dplist_t **list, bool free_element) {
     int size = dpl_size(*list);
-    if (size == 0) {
-        //free((*list)->head);
-        //free((*list)->element_copy);
-        //free((*list)->element_free);
-        //free((*list)->element_compare);
-    } else if (size > 0) {
-        for (int index = size-1; index<=0; index--) {
+    if (size > 0) {
+        for (int index = size-1; index>=0; index--) {
             dpl_remove_at_index(*list, index, free_element);
         }
     }
     free(*list);
-    *list = NULL; // TODO: I think this is the source of the memory leaks
+    *list = NULL;
 
 }
 
@@ -116,7 +111,7 @@ dplist_t *dpl_remove_at_index(dplist_t *list, int index, bool free_element) {
             ref_at_index->prev->next = NULL;
         }
     }
-    /*if (free_element) {
+    /*if (free_element) { // TODO: element_free
         list->element_free(ref_at_index->element);
     }*/
     free(ref_at_index); // free memory after completion
