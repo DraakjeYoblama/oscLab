@@ -86,7 +86,7 @@ void test1()
     dpl_free(&list, false);
     ck_assert_msg(list == NULL, "Failure O5: expected result to be NULL");
 
-    list = dpl_create(element_copy, element_free, element_compare);
+    list = dpl_create(element_copy, element_free, element_compare); // TODO: vanaf hier zijn er problemen
     dpl_insert_at_index(list, content, 0, true);
     dpl_free(&list, true);
     ck_assert_msg(list == NULL, "Failure O6: expected result to be NULL");
