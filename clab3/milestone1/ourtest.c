@@ -115,7 +115,7 @@ void test1()
     free(content2);
 }
 
-/*
+
 void test2()
 {
     my_element_t *content = (my_element_t *)malloc(sizeof(my_element_t));
@@ -227,15 +227,13 @@ void test3()
 }
 
 
-*/
-
 
 int main(void)
 {
 
     test1();
-    //test2();
-    //test3();
+    test2();
+    test3();
 
   
     return 0;
