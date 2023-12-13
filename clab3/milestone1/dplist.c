@@ -50,13 +50,19 @@ void dpl_free(dplist_t **list, bool free_element) {
 }
 
 dplist_t *dpl_insert_at_index(dplist_t *list, void *element, int index, bool insert_copy) {
-    //TODO: element_copy
     dplist_node_t *ref_at_index, *list_node;
     if (list == NULL) return NULL;
 
     list_node = malloc(sizeof(dplist_node_t));
 
-    list_node->element = element;
+
+    if (insert_copy) { // TODO: element_copy
+        list_node->element = list->element_copy(element);
+    } else {
+        list_node->element = element;
+    }
+
+
     // pointer drawing breakpoint
     if (list->head == NULL) { // covers case 1
         list_node->prev = NULL;
@@ -111,9 +117,11 @@ dplist_t *dpl_remove_at_index(dplist_t *list, int index, bool free_element) {
             ref_at_index->prev->next = NULL;
         }
     }
-    /*if (free_element) { // TODO: element_free
+
+    if (free_element) { // TODO: element_free
         list->element_free(ref_at_index->element);
-    }*/
+    }
+
     free(ref_at_index); // free memory after completion
     return list;
 }
@@ -147,9 +155,9 @@ int dpl_get_index_of_element(dplist_t *list, void *element) {
     dplist_node_t *dummy = list->head;
 
     while (true) {
-        if (dummy->element == element /*list->element_compare(element, dummy->element)*/) { //TODO: element_compare
+        if (/* dummy->element == element */ list->element_compare(element, dummy->element)) { //TODO: element_compare
             return count;
-        } else if (dummy->element == NULL /*list->element_compare(NULL, dummy->element)*/) {
+        } else if (/* dummy->element == NULL */ list->element_compare(NULL, dummy->element)) {
             return -1;
         }
         dummy = dummy->next;
