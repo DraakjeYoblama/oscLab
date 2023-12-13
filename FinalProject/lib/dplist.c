@@ -42,29 +42,30 @@ dplist_t *dpl_create(// callback functions
 
 void dpl_free(dplist_t **list, bool free_element) {
     int size = dpl_size(*list);
-    if (size == 0) {
-        //free((*list)->head);
-        //free((*list)->element_copy);
-        //free((*list)->element_free);
-        //free((*list)->element_compare);
-    } else if (size > 0) {
+    if (size > 0) {
         for (int index = size-1; index>=0; index--) {
             dpl_remove_at_index(*list, index, free_element);
         }
     }
     free(*list);
-    *list = NULL; // TODO: I think this is the source of the memory leaks
+    *list = NULL;
 
 }
 
 dplist_t *dpl_insert_at_index(dplist_t *list, void *element, int index, bool insert_copy) {
-    //TODO: element_copy
     dplist_node_t *ref_at_index, *list_node;
     if (list == NULL) return NULL;
 
     list_node = malloc(sizeof(dplist_node_t));
 
-    list_node->element = element;
+
+    if (insert_copy) {
+        list_node->element = list->element_copy(element);
+    } else {
+        list_node->element = element;
+    }
+
+
     // pointer drawing breakpoint
     if (list->head == NULL) { // covers case 1
         list_node->prev = NULL;
@@ -119,9 +120,12 @@ dplist_t *dpl_remove_at_index(dplist_t *list, int index, bool free_element) {
             ref_at_index->prev->next = NULL;
         }
     }
-    /*if (free_element) {
-        list->element_free(ref_at_index->element);
-    }*/
+
+    //void* test = ref_at_index->element;
+    if (free_element) {
+        list->element_free(&ref_at_index->element);
+    }
+
     free(ref_at_index); // free memory after completion
     return list;
 }
@@ -151,20 +155,18 @@ void *dpl_get_element_at_index(dplist_t *list, int index) {
 int dpl_get_index_of_element(dplist_t *list, void *element) {
     if (list == NULL || list->head == NULL) return -1; // no list or empty list
 
-    int count = 0;
     dplist_node_t *dummy = list->head;
 
-    while (true) {
-        if (dummy->element == element /*list->element_compare(element, dummy->element)*/) { //TODO: element_compare
+    if (dummy->element == NULL) {
+        return -1;
+    }
+    for (int count = 0; true; count++) {
+        if (list->element_compare(element, dummy->element)) {
             return count;
-        } else if (dummy->element == NULL /*list->element_compare(NULL, dummy->element)*/) {
-            return -1;
         }
         dummy = dummy->next;
-        count++;
     }
     return -1;
-
 }
 
 dplist_node_t *dpl_get_reference_at_index(dplist_t *list, int index) {
@@ -194,4 +196,3 @@ void *dpl_get_element_at_reference(dplist_t *list, dplist_node_t *reference) {
     }
     return reference->element;
 }
-
