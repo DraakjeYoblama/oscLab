@@ -118,8 +118,9 @@ dplist_t *dpl_remove_at_index(dplist_t *list, int index, bool free_element) {
         }
     }
 
+    //void* test = ref_at_index->element;
     if (free_element) { // TODO: element_free
-        list->element_free(ref_at_index->element);
+        list->element_free(&ref_at_index->element);
     }
 
     free(ref_at_index); // free memory after completion
@@ -151,20 +152,18 @@ void *dpl_get_element_at_index(dplist_t *list, int index) {
 int dpl_get_index_of_element(dplist_t *list, void *element) {
     if (list == NULL || list->head == NULL) return -1; // no list or empty list
 
-    int count = 0;
     dplist_node_t *dummy = list->head;
 
-    while (true) {
+    if (/* dummy->element == NULL */ list->element_compare(NULL, dummy->element)) {
+        return -1;
+    }
+    for (int count = 0; true; count++) {
         if (/* dummy->element == element */ list->element_compare(element, dummy->element)) { //TODO: element_compare
             return count;
-        } else if (/* dummy->element == NULL */ list->element_compare(NULL, dummy->element)) {
-            return -1;
         }
         dummy = dummy->next;
-        count++;
     }
     return -1;
-
 }
 
 dplist_node_t *dpl_get_reference_at_index(dplist_t *list, int index) {
