@@ -157,8 +157,9 @@ int dpl_get_index_of_element(dplist_t *list, void *element) {
     if (dummy->element == NULL) {
         return -1;
     }
-    for (int count = 0; true; count++) {
-        if (list->element_compare(element, dummy->element)) {
+    int size = dpl_size(list);
+    for (int count = 0; count<size; count++) {
+        if (list->element_compare(element, dummy->element) == 0) {
             return count;
         }
         dummy = dummy->next;

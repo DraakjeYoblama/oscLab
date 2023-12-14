@@ -21,3 +21,4 @@ int main(){
     fclose(map);
     fclose(data);
 }
+

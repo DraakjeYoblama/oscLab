@@ -31,6 +31,19 @@
                       }                                             \
                     } while(0)
 
+
+typedef struct
+{
+    uint16_t id;
+    int room_id;
+    double running_avg;
+    time_t last_modified;
+} my_element_t;
+
+void *element_copy(void *element);
+void element_free(void **element);
+int element_compare(void *x, void *y);
+
 /**
  *  This method holds the core functionality of your datamgr. It takes in 2 file pointers to the sensor files and parses them. 
  *  When the method finishes all data should be in the internal pointer list and all log messages should be printed to stderr.

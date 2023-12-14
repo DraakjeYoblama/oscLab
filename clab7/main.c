@@ -23,27 +23,27 @@ int main() {
 
 
     // parent (writer thread)
-    FILE *fp;
+    FILE *fpsd;
     // Open a file in read mode
-    fp = fopen("sensor_data", "r");
+    fpsd = fopen("sensor_data", "r");
 
-    sensor_data_t sensor_data;
+    sensor_data_t sensor_data; //defined in config.h
 
-    while (!feof(fp)) {
-        // Read the content and store it inside buffer
-        fread(&sensor_data.id, 2, 1, fp);
-        fread(&sensor_data.value, 8, 1, fp);
-        fread(&sensor_data.ts, 8, 1, fp);
+    while (!feof(fpsd)) {
+        // Read the content as a sensor_data_t
+        fread(&sensor_data.id, 2, 1, fpsd);
+        fread(&sensor_data.value, 8, 1, fpsd);
+        fread(&sensor_data.ts, 8, 1, fpsd);
 
+
+        //replace id with 0 at end of file
+        if (feof(fpsd)) {
+            sensor_data.id = 0;
+        }
 
         // Insert data entry into buffer
-        if (!feof(fp)) {
-            sbuffer_insert(*myBuffer, &sensor_data);
-            //printf("%d, %lf, %ld\n", sensor_data.id, sensor_data.value, sensor_data.ts);
-        } else {
-            sensor_data.id = 0;
-            sbuffer_insert(*myBuffer, &sensor_data);
-        }
+        sbuffer_insert(*myBuffer, &sensor_data);
+        //printf("%d, %lf, %ld\n", sensor_data.id, sensor_data.value, sensor_data.ts);
 
         usleep(10000); //10 millisec
     }
@@ -57,7 +57,7 @@ int main() {
     fclose(csv);
     sbuffer_free(myBuffer);
     free(myBuffer);
-    fclose(fp);
+    fclose(fpsd);
     return 0;
 }
 
@@ -73,7 +73,7 @@ void *reader(void* buffer) {
 
             // write data to sensor_data_out.csv
             if (received_data.id != 0) {
-                printf("%lu: %d, %lf, %ld\n", pthread_self(), received_data.id, received_data.value, received_data.ts);
+                //printf("%lu: %d, %lf, %ld\n", pthread_self(), received_data.id, received_data.value, received_data.ts);
 
                 fprintf(csv, "%d, %lf, %ld\n", received_data.id, received_data.value, received_data.ts);
             } else {
