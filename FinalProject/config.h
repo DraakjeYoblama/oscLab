@@ -16,12 +16,3 @@ typedef struct {
 
 #endif /* _CONFIG_H_ */
 
-// TODO: the next part is just copied over from milestone 2/plab2/clab5 (logger.h), make it correct and fix bugs
-
-#include <stdio.h>
-#include <stdlib.h>
-
-int main();
-int write_to_log_process(char *msg);
-int create_log_process();
-int end_log_process();

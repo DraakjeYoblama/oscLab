@@ -1,7 +1,9 @@
 
-// TODO: the next part is just copied over from milestone 2/plab2/clab5 (logger.c), make it correct and fix bugs
+// TODO: this file is just copied over from milestone 2/plab2/clab5 (logger.c/.h), make it correct and fix bugs
 
+// start header
 #include <stdio.h>
+#include <stdlib.h>
 //#include <stdlib.h>
 #include <string.h>
 //#include <sys/types.h>
@@ -11,6 +13,14 @@
 //#include<signal.h>
 
 #include "config.h" //#include "logger.h"
+
+int main();
+int write_to_log_process(char *msg);
+int create_log_process();
+int end_log_process();
+
+// end header
+
 
 // pipes: reading end is 0, writing end is 1
 int fd1[2];
