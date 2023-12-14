@@ -35,8 +35,9 @@
 typedef struct
 {
     uint16_t id;
-    int room_id;
-    double running_avg;
+    uint16_t room_id;
+    double running_avg[RUN_AVG_LENGTH];
+    int ra_lastadded;
     time_t last_modified;
 } my_element_t;
 

@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdio.h>
 #include "datamgr.h"
 #include "lib/dplist.h"
 
@@ -6,24 +7,29 @@ dplist_t *list;
 
 void datamgr_parse_sensor_files(FILE *fp_sensor_map, FILE *fp_sensor_data) {
 
-    list = dpl_create(element_copy, element_free, element_compare);
+    // Part 1: make dplist from sensor_map
 
-    char line[12];
+    list = dpl_create(element_copy, element_free, element_compare);
+    char line[12]; // 2x uint16 (max. 5 digits) + space + string terminator = 12 characters
     my_element_t temp_element;
-    int i = 1;
-    while (fgets(line, sizeof(line), fp_sensor_map)) {
-        if (sscanf(line, "%d %hd", &temp_element.room_id, &temp_element.id) == 2) {
-            dpl_insert_at_index(list, &temp_element, i, true);
-        }
-        i++;
+    temp_element.ra_lastadded = 0;
+    temp_element.last_modified = 0;
+    for (int i=0; i<RUN_AVG_LENGTH; i++) {
+        temp_element.running_avg[i] = 1;
     }
 
-    // Open sensor data file in read mode
+    int index_dpl = 1;
+    while (fgets(line, sizeof(line), fp_sensor_map)) {
+        if (sscanf(line, "%hd %hd", &temp_element.room_id, &temp_element.id) == 2) {
+            dpl_insert_at_index(list, &temp_element, index_dpl, true);
+        }
+        index_dpl++;
+    }
+
+    // Part 2: fill dplist with data from sensor_data
 
     sensor_data_t sensor_data; //defined in config.h
-
-    void* test;
-    int index_dpl;
+    // index_dpl and temp_element get a new use now, how fun
 
     while (!feof(fp_sensor_data)) {
         // Read the content as a sensor_data_t
@@ -32,21 +38,27 @@ void datamgr_parse_sensor_files(FILE *fp_sensor_map, FILE *fp_sensor_data) {
         fread(&sensor_data.ts, 8, 1, fp_sensor_data);
 
 
-        //replace id with 0 at end of file
+        //replace id with 0 at end of file and break out of the while loop
         if (feof(fp_sensor_data)) {
             sensor_data.id = 0;
             break;
         }
 
-        // TODO: add values from binary file to the dplist
+        // add values from binary file to the dplist
         index_dpl = dpl_get_index_of_element(list, &sensor_data);
-        printf("%d\n", index_dpl);
+        //printf("%d\n", index_dpl);
         if (index_dpl == -1) {
             // values not in .map file should be dropped, with a log message saying so
-            printf("element not in .map file\n");
+            fprintf(stderr, "Sensor with that ID not in list\n");
+        } else {
+            temp_element = *(my_element_t *)dpl_get_element_at_index(list, index_dpl);
+            temp_element.last_modified = sensor_data.ts;
+            if (++temp_element.ra_lastadded >= RUN_AVG_LENGTH) { // TODO: running average gets reset every time
+                temp_element.ra_lastadded = 0;
+            }
+            temp_element.running_avg[temp_element.ra_lastadded] = sensor_data.value;
+
         }
-        test = dpl_get_element_at_index(list, index_dpl);
-        //temp_element = test;
     }
 }
 
@@ -56,23 +68,53 @@ void datamgr_free() {
 }
 
 uint16_t datamgr_get_room_id(sensor_id_t sensor_id) {
-    // TODO: write this
-    // give the room id value for element with given id
+    int index_dpl;
+    my_element_t temp_element;
+    temp_element.id = sensor_id;
+    index_dpl = dpl_get_index_of_element(list, &temp_element);
+    if (index_dpl == -1) {
+        fprintf(stderr, "Sensor with that ID not in list\n");
+        return 0;
+    } else {
+        temp_element = *(my_element_t *) dpl_get_element_at_index(list, index_dpl);
+        return temp_element.room_id;
+    }
 }
 
 sensor_value_t datamgr_get_avg(sensor_id_t sensor_id) {
-    // TODO: write this
-    // give the running average value for element with given id
+    int index_dpl;
+    my_element_t temp_element;
+    double average = 0;
+    temp_element.id = sensor_id;
+    index_dpl = dpl_get_index_of_element(list, &temp_element);
+    if (index_dpl == -1) {
+        fprintf(stderr, "Sensor with that ID not in list\n");
+    } else {
+        temp_element = *(my_element_t *) dpl_get_element_at_index(list, index_dpl);
+        for (int i=0; i<RUN_AVG_LENGTH; i++) {
+            average += temp_element.running_avg[i];
+        }
+        average = average/RUN_AVG_LENGTH;
+    }
+    return average;
 }
 
 time_t datamgr_get_last_modified(sensor_id_t sensor_id) {
-    // TODO: write this
-    // give the last modified value for element with given id
+    int index_dpl;
+    my_element_t temp_element;
+    temp_element.id = sensor_id;
+    index_dpl = dpl_get_index_of_element(list, &temp_element);
+    if (index_dpl == -1) {
+        fprintf(stderr, "Sensor with that ID not in list\n");
+        return 0;
+    } else {
+        temp_element = *(my_element_t *) dpl_get_element_at_index(list, index_dpl);
+        return temp_element.last_modified;
+    }
 }
 
 int datamgr_get_total_sensors() {
-    // TODO: write this
-    // go through all elements of dplist, count them
+    return dpl_size(list);
 }
 
 void *element_copy(void *element)
@@ -82,8 +124,11 @@ void *element_copy(void *element)
     assert(copy != NULL);
     copy->id = ((my_element_t *)element)->id;
     copy->room_id = ((my_element_t *)element)->room_id;
-    copy->running_avg = ((my_element_t *)element)->running_avg;
     copy->last_modified = ((my_element_t *)element)->last_modified;
+    copy->ra_lastadded = ((my_element_t *)element)->ra_lastadded;
+    for (int i=0; i<RUN_AVG_LENGTH; i++) {
+        copy->running_avg[i] = ((my_element_t *)element)->running_avg[i];
+    }
     return (void *)copy;
 }
 

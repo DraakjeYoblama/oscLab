@@ -25,5 +25,3 @@ int main();
 int write_to_log_process(char *msg);
 int create_log_process();
 int end_log_process();
-
-#endif
