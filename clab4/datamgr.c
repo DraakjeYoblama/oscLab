@@ -70,48 +70,56 @@ void datamgr_free() {
 
 uint16_t datamgr_get_room_id(sensor_id_t sensor_id) {
     int index_dpl;
-    my_element_t* temp_node = malloc(sizeof(my_element_t*));
-    temp_node->id = sensor_id;
-    index_dpl = dpl_get_index_of_element(list, &temp_node);
+    uint16_t temp_room = 0;
+    my_element_t* vessel_node = malloc(sizeof(my_element_t)); // it's only a vessel to move the sensor id
+    vessel_node->id = sensor_id;
+    index_dpl = dpl_get_index_of_element(list, vessel_node);
     if (index_dpl == -1) {
         fprintf(stderr, "Sensor with that ID not in list\n");
-        return 0;
     } else {
-        temp_node = (my_element_t *) dpl_get_element_at_index(list, index_dpl);
-        return temp_node->room_id;
+        my_element_t* temp_node = (my_element_t *) dpl_get_element_at_index(list, index_dpl);
+        temp_room = temp_node->room_id;
     }
+    free(vessel_node);
+    vessel_node = NULL;
+    return temp_room;
 }
 
 sensor_value_t datamgr_get_avg(sensor_id_t sensor_id) {
     int index_dpl;
-    my_element_t* temp_node = malloc(sizeof(my_element_t*));
+    my_element_t* vessel_node = malloc(sizeof(my_element_t)); // TODO: malloc needs free()
     double average = 0;
-    temp_node->id = sensor_id;
-    index_dpl = dpl_get_index_of_element(list, &temp_node);
+    vessel_node->id = sensor_id;
+    index_dpl = dpl_get_index_of_element(list, vessel_node);
     if (index_dpl == -1) {
         fprintf(stderr, "Sensor with that ID not in list\n");
     } else {
-        temp_node = (my_element_t *) dpl_get_element_at_index(list, index_dpl);
+        my_element_t* temp_node = (my_element_t *) dpl_get_element_at_index(list, index_dpl);
         for (int i=0; i<RUN_AVG_LENGTH; i++) {
             average += temp_node->running_avg[i];
         }
         average = average/RUN_AVG_LENGTH;
     }
+    free(vessel_node);
+    vessel_node = NULL;
     return average;
 }
 
 time_t datamgr_get_last_modified(sensor_id_t sensor_id) {
     int index_dpl;
-    my_element_t* temp_node = malloc(sizeof(my_element_t*));
-    temp_node->id = sensor_id;
-    index_dpl = dpl_get_index_of_element(list, &temp_node);
+    time_t temp_time = 0;
+    my_element_t* vessel_node = malloc(sizeof(my_element_t)); // TODO: malloc needs free()
+    vessel_node->id = sensor_id;
+    index_dpl = dpl_get_index_of_element(list, vessel_node);
     if (index_dpl == -1) {
         fprintf(stderr, "Sensor with that ID not in list\n");
-        return 0;
     } else {
-        temp_node = (my_element_t *) dpl_get_element_at_index(list, index_dpl);
-        return temp_node->last_modified;
+        my_element_t* temp_node = (my_element_t *) dpl_get_element_at_index(list, index_dpl);
+        temp_time = temp_node->last_modified;
     }
+    free(vessel_node);
+    vessel_node = NULL;
+    return temp_time;
 }
 
 int datamgr_get_total_sensors() {
