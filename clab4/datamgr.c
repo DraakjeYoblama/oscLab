@@ -15,7 +15,7 @@ void datamgr_parse_sensor_files(FILE *fp_sensor_map, FILE *fp_sensor_data) {
     temp_element.ra_lastadded = 0;
     temp_element.last_modified = 0;
     for (int i=0; i<RUN_AVG_LENGTH; i++) {
-        temp_element.running_avg[i] = 1;
+        temp_element.running_avg[i] = 0;
     }
 
     int index_dpl = 1;
@@ -29,14 +29,14 @@ void datamgr_parse_sensor_files(FILE *fp_sensor_map, FILE *fp_sensor_data) {
     // Part 2: fill dplist with data from sensor_data
 
     sensor_data_t sensor_data; //defined in config.h
-    // index_dpl and temp_element get a new use now, how fun
+    my_element_t* temp_node;
+    // index_dpl gets reused, how fun
 
     while (!feof(fp_sensor_data)) {
         // Read the content as a sensor_data_t
         fread(&sensor_data.id, 2, 1, fp_sensor_data);
         fread(&sensor_data.value, 8, 1, fp_sensor_data);
         fread(&sensor_data.ts, 8, 1, fp_sensor_data);
-
 
         //replace id with 0 at end of file and break out of the while loop
         if (feof(fp_sensor_data)) {
@@ -51,12 +51,13 @@ void datamgr_parse_sensor_files(FILE *fp_sensor_map, FILE *fp_sensor_data) {
             // values not in .map file should be dropped, with a log message saying so
             fprintf(stderr, "Sensor with that ID not in list\n");
         } else {
-            temp_element = *(my_element_t *)dpl_get_element_at_index(list, index_dpl);
-            temp_element.last_modified = sensor_data.ts;
-            if (++temp_element.ra_lastadded >= RUN_AVG_LENGTH) { // TODO: running average gets reset every time
-                temp_element.ra_lastadded = 0;
+            //temp_node = dpl_get_reference_at_index(list, index_dpl);
+            temp_node = (my_element_t *)dpl_get_element_at_index(list, index_dpl);
+            temp_node->last_modified = sensor_data.ts;
+            if (++temp_node->ra_lastadded >= RUN_AVG_LENGTH) {
+                temp_node->ra_lastadded = 0;
             }
-            temp_element.running_avg[temp_element.ra_lastadded] = sensor_data.value;
+            temp_node->running_avg[temp_node->ra_lastadded] = sensor_data.value;
 
         }
     }
@@ -69,30 +70,30 @@ void datamgr_free() {
 
 uint16_t datamgr_get_room_id(sensor_id_t sensor_id) {
     int index_dpl;
-    my_element_t temp_element;
-    temp_element.id = sensor_id;
-    index_dpl = dpl_get_index_of_element(list, &temp_element);
+    my_element_t* temp_node = malloc(sizeof(my_element_t*));
+    temp_node->id = sensor_id;
+    index_dpl = dpl_get_index_of_element(list, &temp_node);
     if (index_dpl == -1) {
         fprintf(stderr, "Sensor with that ID not in list\n");
         return 0;
     } else {
-        temp_element = *(my_element_t *) dpl_get_element_at_index(list, index_dpl);
-        return temp_element.room_id;
+        temp_node = (my_element_t *) dpl_get_element_at_index(list, index_dpl);
+        return temp_node->room_id;
     }
 }
 
 sensor_value_t datamgr_get_avg(sensor_id_t sensor_id) {
     int index_dpl;
-    my_element_t temp_element;
+    my_element_t* temp_node = malloc(sizeof(my_element_t*));
     double average = 0;
-    temp_element.id = sensor_id;
-    index_dpl = dpl_get_index_of_element(list, &temp_element);
+    temp_node->id = sensor_id;
+    index_dpl = dpl_get_index_of_element(list, &temp_node);
     if (index_dpl == -1) {
         fprintf(stderr, "Sensor with that ID not in list\n");
     } else {
-        temp_element = *(my_element_t *) dpl_get_element_at_index(list, index_dpl);
+        temp_node = (my_element_t *) dpl_get_element_at_index(list, index_dpl);
         for (int i=0; i<RUN_AVG_LENGTH; i++) {
-            average += temp_element.running_avg[i];
+            average += temp_node->running_avg[i];
         }
         average = average/RUN_AVG_LENGTH;
     }
@@ -101,15 +102,15 @@ sensor_value_t datamgr_get_avg(sensor_id_t sensor_id) {
 
 time_t datamgr_get_last_modified(sensor_id_t sensor_id) {
     int index_dpl;
-    my_element_t temp_element;
-    temp_element.id = sensor_id;
-    index_dpl = dpl_get_index_of_element(list, &temp_element);
+    my_element_t* temp_node = malloc(sizeof(my_element_t*));
+    temp_node->id = sensor_id;
+    index_dpl = dpl_get_index_of_element(list, &temp_node);
     if (index_dpl == -1) {
         fprintf(stderr, "Sensor with that ID not in list\n");
         return 0;
     } else {
-        temp_element = *(my_element_t *) dpl_get_element_at_index(list, index_dpl);
-        return temp_element.last_modified;
+        temp_node = (my_element_t *) dpl_get_element_at_index(list, index_dpl);
+        return temp_node->last_modified;
     }
 }
 
