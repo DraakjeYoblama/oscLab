@@ -4,6 +4,8 @@
 #ifndef _SBUFFER_H_
 #define _SBUFFER_H_
 
+#include <stdlib.h>
+#include <pthread.h>
 #include "config.h"
 
 #define SBUFFER_FAILURE -1
@@ -28,12 +30,22 @@ int sbuffer_free(sbuffer_t **buffer);
 
 /**
  * Removes the first sensor data in 'buffer' (at the 'head') and returns this sensor data as '*data'
- * If 'buffer' is empty, the function doesn't block until new sensor data becomes available but returns SBUFFER_NO_DATA
+ * If 'buffer' is empty, the function blocks until new sensor data becomes available
  * \param buffer a pointer to the buffer that is used
  * \param data a pointer to pre-allocated sensor_data_t space, the data will be copied into this structure. No new memory is allocated for 'data' in this function.
  * \return SBUFFER_SUCCESS on success and SBUFFER_FAILURE if an error occurred
  */
 int sbuffer_remove(sbuffer_t *buffer, sensor_data_t *data);
+
+/**
+ * Reads the first sensor data in 'buffer' (at the 'head') and returns this sensor data as '*data'
+ * Does not remove the data, instead changes a flag in that data
+ * If 'buffer' is empty, the function blocks until new sensor data becomes available
+ * \param buffer a pointer to the buffer that is used
+ * \param data a pointer to pre-allocated sensor_data_t space, the data will be copied into this structure. No new memory is allocated for 'data' in this function.
+ * \return SBUFFER_SUCCESS on success and SBUFFER_FAILURE if an error occurred
+ */
+int sbuffer_read(sbuffer_t *buffer, sensor_data_t *data);
 
 /**
  * Inserts the sensor data in 'data' at the end of 'buffer' (at the 'tail')
