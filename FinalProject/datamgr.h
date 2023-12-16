@@ -1,5 +1,5 @@
 
-// TODO: this file is just copied over from clab4/plab1, use that lab for help on how to implement
+// TODO: this file is just copied over from clab4/plab1, make it correct and fix bugs
 
 #ifndef DATAMGR_H_
 #define DATAMGR_H_

@@ -26,6 +26,8 @@ int main(int argc, char *argv[]) {
     int MAX_CONN = atoi(argv[2]);
     int PORT = atoi(argv[1]);
 
+    pthread_t thread_id[MAX_CONN];
+
     printf("Test server is started\n");
     if (tcp_passive_open(&server, PORT) != TCP_NO_ERROR) exit(EXIT_FAILURE);
     do {
@@ -33,21 +35,16 @@ int main(int argc, char *argv[]) {
         printf("Incoming client connection\n");
         conn_counter++;
 
-
-        // thread
-        pthread_t thread_id;
-
         // Create the thread
-        if (pthread_create(&thread_id, NULL, (void *)connection, (void *)client) != 0) {
+        if (pthread_create(&thread_id[conn_counter-1], NULL, (void *)connection, (void *)client) != 0) {
             printf("Failed to create thread\n");
             return -1;
         }
 
-        // wait for the thread to finish
-        pthread_join(thread_id, NULL);
-
-
     } while (conn_counter < MAX_CONN);
+    for (int i=0; i<MAX_CONN; i++) { // Wait for every thread to end
+        pthread_join(thread_id[i], NULL);
+    }
     if (tcp_close(&server) != TCP_NO_ERROR) exit(EXIT_FAILURE);
     printf("Test server is shutting down\n");
     return 0;
@@ -56,7 +53,7 @@ int main(int argc, char *argv[]) {
 int *connection(tcpsock_t *client) {
     int bytes, result;
     sensor_data_t data;
-    printf("%lu\n", pthread_self());
+    printf("%lu\n", pthread_self()); // Print thread id for debugging reasons
     do {
         // read sensor ID
         bytes = sizeof(data.id);
