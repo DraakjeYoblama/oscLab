@@ -19,7 +19,7 @@ int datamgr(datamgr_args_t args) {
     temp_element.ra_lastadded = 0;
     temp_element.last_modified = 0;
     for (int i=0; i<RUN_AVG_LENGTH; i++) {
-        temp_element.running_avg[i] = 0;
+        temp_element.running_avg[i] = -300;
     }
 
     int index_dpl = 1;
@@ -61,6 +61,13 @@ int datamgr(datamgr_args_t args) {
                         temp_node->ra_lastadded = 0;
                     }
                     temp_node->running_avg[temp_node->ra_lastadded] = received_data.value;
+
+                    /*datamgr_get_avg(received_data.id); // TODO: log too high and low temperatures
+                    if (average > SET_MAX_TEMP) {
+                        printf("It's too warm\n");
+                    } else if (average < SET_MIN_TEMP) {
+                        printf("It's too cold\n");
+                    }*/
                 }
             } else {
                 break;
@@ -103,7 +110,9 @@ sensor_value_t datamgr_get_avg(sensor_id_t sensor_id) {
     } else {
         my_element_t* temp_node = (my_element_t *) dpl_get_element_at_index(list, index_dpl);
         for (int i=0; i<RUN_AVG_LENGTH; i++) {
-            average += temp_node->running_avg[i];
+            if (temp_node->running_avg[i] > -275) {
+                average += temp_node->running_avg[i];
+            }
         }
         average = average/RUN_AVG_LENGTH;
     }
@@ -156,9 +165,9 @@ void element_free(void **element)
 
 int element_compare(void *x, void *y) // returns 0 if id is equal
 {
-    //return ((((my_element_t *)x)->id < ((my_element_t *)y)->id) ? -1 : (((my_element_t *)x)->id == ((my_element_t *)y)->id) ? 0
-    //                                                                                                                        : 1);
-
+    return ((((my_element_t *)x)->id < ((my_element_t *)y)->id) ? -1 : (((my_element_t *)x)->id == ((my_element_t *)y)->id) ? 0
+                                                                                                                            : 1);
+/*
     // refactored to be more readable
     my_element_t *element_x = (my_element_t *)x;
     my_element_t *element_y = (my_element_t *)y;
@@ -170,4 +179,5 @@ int element_compare(void *x, void *y) // returns 0 if id is equal
     } else {
         return 1;
     }
+*/
 }

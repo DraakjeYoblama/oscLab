@@ -52,6 +52,7 @@ int main(int argc, char *argv[]) {
 
     // free buffer
     sbuffer_free(shared_data);
+    free(shared_data);
 
     // end logger thread
     end_log_process();
