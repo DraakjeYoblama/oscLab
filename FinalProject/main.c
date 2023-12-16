@@ -1,23 +1,21 @@
 
-// TODO: this file is just copied over from milestone 2/plab2/clab5 (logger.c/.h), make it correct and fix bugs
+// based on milestone2/clab5/plab2 (logger.c/.h)
 
 // start header
 #include <stdio.h>
 #include <stdlib.h>
-//#include <stdlib.h>
 #include <string.h>
-//#include <sys/types.h>
+#include <pthread.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include<time.h>
-//#include<signal.h>
+#include "config.h"
+#include "sbuffer.h"
+#include "connmgr.h"
+#include "datamgr.h"
+#include "sensor_db.h"
 
-#include "config.h" //#include "logger.h"
-
-int main();
-int write_to_log_process(char *msg);
-int create_log_process();
-int end_log_process();
+int main(int argc, char *argv[]);
 
 // end header
 
@@ -28,7 +26,27 @@ pid_t pid;
 int logcounter;
 FILE* logname;
 
-int main() {
+int main(int argc, char *argv[]) {
+    pthread_t connmgr_id, datamgr_id, storagemgr_id;
+    connmgr_args_t conn_args;
+    conn_args.argc = argc;
+    conn_args.argv = argv;
+
+    // create logger child thread
+    create_log_process();
+
+    // Create the threads
+    pthread_create(&connmgr_id, NULL, (void*)connmgr, &conn_args); // TODO: add functions
+    pthread_create(&datamgr_id, NULL, (void*)datamgr_parse_sensor_files, NULL);
+    pthread_create(&storagemgr_id, NULL, (void*)open_db, NULL);
+
+
+    // wait for threads to end
+    pthread_join(connmgr_id, NULL);
+    pthread_join(datamgr_id, NULL);
+    pthread_join(storagemgr_id, NULL);
+
+    end_log_process();
 
     return 0;
 }

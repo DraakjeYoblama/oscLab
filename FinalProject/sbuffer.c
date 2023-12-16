@@ -1,5 +1,5 @@
 
-// TODO: this file is just copied over from milestone3/clab7/plab4, make it correct and fix bugs
+// based on milestone3/clab7/plab4
 
 #include <stdlib.h>
 #include <pthread.h>

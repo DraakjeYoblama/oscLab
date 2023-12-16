@@ -1,5 +1,5 @@
 
-// TODO: this file is just copied over from clab4/plab1, make it correct and fix bugs
+// based on clab4/plab1
 
 #include <assert.h>
 #include <stdio.h>
@@ -7,6 +7,8 @@
 #include "lib/dplist.h"
 
 dplist_t *list;
+
+// TODO: rewrite file, add average temperature logging
 
 void datamgr_parse_sensor_files(FILE *fp_sensor_map, FILE *fp_sensor_data) {
 

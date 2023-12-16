@@ -1,5 +1,5 @@
 
-// TODO: this file is just copied over from clab6/plab3, make it correct and fix bugs
+// based on clab6/plab3
 
 //
 // Created by douwe on 16/12/23.
@@ -11,8 +11,13 @@
 #include "config.h"
 #include "lib/tcpsock.h"
 
-int main(int argc, char *argv[]);
-int *connection(tcpsock_t *client);
+typedef struct connmgr_args {
+    int argc;
+    char **argv;
+} connmgr_args_t;
+
+int connmgr(connmgr_args_t args);
+int connection(tcpsock_t *client);
 
 
 #endif //CLAB6_TEST_SERVER_H

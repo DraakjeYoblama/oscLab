@@ -1,34 +1,24 @@
 
-// TODO: this file is just copied over from milestone2/clab5/plab2, make it correct and fix bugs
-// TODO: use better log messages
+// based on milestone2/clab5/plab2
 
 #include "sensor_db.h"
 #include "config.h"
-//#include "logger.h"
 
-FILE * open_db(char * filename, bool append) {
-    create_log_process();
-    FILE* csv;
+int storagemgr() {
+    char logmsg[50];
 
-    if (!append) {
-        csv = fopen(filename, "w"); // replace file
-    } else {
-        csv = fopen(filename, "a"); //append to existing file
-    }
-    write_to_log_process("Data file opened.");
+    // open csv
+    FILE* csv = fopen("data.csv", "w");
+    write_to_log_process("A new data.csv file has been created.");
 
-    return csv;
-}
+    // TODO: make this listen for incoming sensor messages in a loop
+    // insert sensor
+    fprintf(csv, "%d, %lf, %ld\n", sensor_id_t id, sensor_value_t value, sensor_ts_t ts);
+    sprintf(logmsg, "Data insertion from sensor %u succeeded.", sensor_id_t id);
+    write_to_log_process(logmsg);
 
-int insert_sensor(FILE * f, sensor_id_t id, sensor_value_t value, sensor_ts_t ts) {
-    fprintf(f, "%d, %lf, %ld\n", id, value, ts);
-    write_to_log_process("Data inserted.");
-    return 0;
-}
-
-int close_db(FILE * f){
-    fclose(f);
-    write_to_log_process("Data file closed.");
-    end_log_process();
+    // close csv
+    fclose(csv);
+    write_to_log_process("The data.csv file has been closed.");
     return 0;
 }

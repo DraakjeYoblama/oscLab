@@ -1,5 +1,5 @@
 
-// TODO: this file is just copied over from clab6/plab3, make it correct and fix bugs
+// based on clab6/plab3
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,21 +9,18 @@
 #include "config.h"
 #include "lib/tcpsock.h"
 
-/**
- * Implements a test server (hopefully multiple connections at a time)
- */
 
-int main(int argc, char *argv[]) {
+int connmgr(connmgr_args_t args) {
     tcpsock_t *server, *client;
     int conn_counter = 0;
 
-    if(argc < 3) {
+    if(args.argc < 3) {
         printf("Please provide the right arguments: first the port, then the max nb of clients");
         return -1;
     }
 
-    int MAX_CONN = atoi(argv[2]);
-    int PORT = atoi(argv[1]);
+    int MAX_CONN = atoi(args.argv[2]);
+    int PORT = atoi(args.argv[1]);
 
     pthread_t thread_id[MAX_CONN];
 
@@ -49,9 +46,15 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-int *connection(tcpsock_t *client) {
+int connection(tcpsock_t *client) {
     int bytes, result;
     sensor_data_t data;
+
+    // write to log
+    char logmsg[50];
+    sprintf(logmsg, "Sensor node %u has opened a new connection", data.id);
+    write_to_log_process(logmsg);
+
     printf("%lu\n", pthread_self()); // Print thread id for debugging reasons
     do {
         // read sensor ID
@@ -68,11 +71,18 @@ int *connection(tcpsock_t *client) {
                    (long int) data.ts);
         }
     } while (result == TCP_NO_ERROR);
-    if (result == TCP_CONNECTION_CLOSED)
+    if (result == TCP_CONNECTION_CLOSED) {
         printf("Peer has closed connection\n");
-    else
+    } else {
         printf("Error occured on connection to peer\n");
+    }
+
+    // write to log
+    sprintf(logmsg, "Sensor node %u has closed the connection", data.id);
+    write_to_log_process(logmsg);
+
     tcp_close(&client);
+    return 0;
 }
 
 

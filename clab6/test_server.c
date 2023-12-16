@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-int *connection(tcpsock_t *client) {
+int connection(tcpsock_t *client) {
     int bytes, result;
     sensor_data_t data;
     printf("%lu\n", pthread_self()); // Print thread id for debugging reasons
@@ -74,6 +74,8 @@ int *connection(tcpsock_t *client) {
     else
         printf("Error occured on connection to peer\n");
     tcp_close(&client);
+
+    return 0;
 }
 
 

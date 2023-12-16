@@ -1,5 +1,5 @@
 
-// TODO: this file is just copied over from milestone2/clab5/plab2, make it correct and fix bugs
+// based on milestone2/clab5/plab2
 
 /**
  * \author Bert Lagaisse
@@ -13,9 +13,7 @@
 #include "config.h"
 
 #include <stdbool.h>
-FILE * open_db(char * filename, bool append);
-int insert_sensor(FILE * f, sensor_id_t id, sensor_value_t value, sensor_ts_t ts);
-int close_db(FILE * f);
+int storagemgr();
 
 
 #endif /* _SENSOR_DB_H_ */
