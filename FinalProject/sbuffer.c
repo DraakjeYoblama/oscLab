@@ -1,9 +1,6 @@
 
 // based on milestone3/clab7/plab4
 
-#include <stdlib.h>
-#include <pthread.h>
-#include <unistd.h>
 #include "sbuffer.h"
 
 /**
@@ -69,9 +66,10 @@ int sbuffer_remove(sbuffer_t *buffer, sensor_data_t *data) {
         pthread_mutex_unlock(&buffermutex);
         return SBUFFER_FAILURE;
     }
-    if (buffer->head == NULL) {
+    if (buffer->head == NULL) { // TODO: make this block if flag is not set
+        // TODO: make this fuction read the first buffer entry without this flag set
         pthread_cond_wait(&filled, &buffermutex);
-        //pthread_mutex_unlock(&buffermutex);
+        //pthread_mutex_unlock(&buffermutex); // TODO: fix blocking
         //return SBUFFER_NO_DATA;
     }
     *data = buffer->head->data;
@@ -87,6 +85,26 @@ int sbuffer_remove(sbuffer_t *buffer, sensor_data_t *data) {
         buffer->head = buffer->head->next;
     }
     free(dummy);
+    pthread_mutex_unlock(&buffermutex);
+    return SBUFFER_SUCCESS;
+}
+
+int sbuffer_read(sbuffer_t *buffer, sensor_data_t *data) { // TODO: make this change a flag or something
+    pthread_mutex_lock(&buffermutex);
+    if (buffer == NULL) {
+        pthread_mutex_unlock(&buffermutex);
+        return SBUFFER_FAILURE;
+    }
+    if (buffer->head == NULL) {
+        pthread_cond_wait(&filled, &buffermutex);
+        //pthread_mutex_unlock(&buffermutex); // TODO: fix blocking
+        //return SBUFFER_NO_DATA;
+    }
+    *data = buffer->head->data;
+    if (buffer->head->data.id == 0) //end marker
+    {
+        // do something when there is no data left?
+    }
     pthread_mutex_unlock(&buffermutex);
     return SBUFFER_SUCCESS;
 }

@@ -1,21 +1,34 @@
 
-// based on milestone2/clab5/plab2
+// based on milestone2/clab5/plab2 and milestone3
 
 #include "sensor_db.h"
-#include "config.h"
 
-int storagemgr() {
+int storagemgr(storagemgr_args_t args) {
     char logmsg[50];
 
     // open csv
-    FILE* csv = fopen("data.csv", "w");
+    FILE* csv = fopen(args.csv_name, "w");
     write_to_log_process("A new data.csv file has been created.");
 
-    // TODO: make this listen for incoming sensor messages in a loop
     // insert sensor
-    fprintf(csv, "%d, %lf, %ld\n", sensor_id_t id, sensor_value_t value, sensor_ts_t ts);
-    sprintf(logmsg, "Data insertion from sensor %u succeeded.", sensor_id_t id);
-    write_to_log_process(logmsg);
+    sensor_data_t received_data;
+
+    while (1) {
+        // get data from buffer
+        if (sbuffer_remove(args.buffer, &received_data) == 0) {
+
+            // write data to sensor_data_out.csv
+            if (received_data.id != 0) {
+                //printf("%lu: %d, %lf, %ld\n", pthread_self(), received_data.id, received_data.value, received_data.ts);
+
+                fprintf(csv, "%d, %lf, %ld\n", received_data.id, received_data.value, received_data.ts);
+                sprintf(logmsg, "Data insertion from sensor %u succeeded.", received_data.id);
+                write_to_log_process(logmsg);
+            } else {
+                break;
+            }
+        }
+    }
 
     // close csv
     fclose(csv);

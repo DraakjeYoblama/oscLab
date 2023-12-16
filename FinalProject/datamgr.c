@@ -1,18 +1,17 @@
 
 // based on clab4/plab1
 
-#include <assert.h>
-#include <stdio.h>
 #include "datamgr.h"
-#include "lib/dplist.h"
+
 
 dplist_t *list;
 
-// TODO: rewrite file, add average temperature logging
+// TODO: rewrite file, add average temperature logging, add logging in general
 
-void datamgr_parse_sensor_files(FILE *fp_sensor_map, FILE *fp_sensor_data) {
+int datamgr(datamgr_args_t args) {
 
     // Part 1: make dplist from sensor_map
+    FILE * map = fopen(args.sensor_map, "r");
 
     list = dpl_create(element_copy, element_free, element_compare);
     char line[12]; // 2x uint16 (max. 5 digits) + space + string terminator = 12 characters
@@ -24,48 +23,51 @@ void datamgr_parse_sensor_files(FILE *fp_sensor_map, FILE *fp_sensor_data) {
     }
 
     int index_dpl = 1;
-    while (fgets(line, sizeof(line), fp_sensor_map)) {
+    while (fgets(line, sizeof(line), map)) {
         if (sscanf(line, "%hd %hd", &temp_element.room_id, &temp_element.id) == 2) {
             dpl_insert_at_index(list, &temp_element, index_dpl, true);
         }
         index_dpl++;
     }
+    fclose(map);
 
-    // Part 2: fill dplist with data from sensor_data
 
-    sensor_data_t sensor_data; //defined in config.h
+    // Part 2: fill dplist with data from buffer
+
+    sensor_data_t received_data; //defined in config.h
     my_element_t* temp_node;
+    char logmsg[60];
     // index_dpl gets reused, how fun
 
-    while (!feof(fp_sensor_data)) {
-        // Read the content as a sensor_data_t
-        fread(&sensor_data.id, 2, 1, fp_sensor_data);
-        fread(&sensor_data.value, 8, 1, fp_sensor_data);
-        fread(&sensor_data.ts, 8, 1, fp_sensor_data);
+    while (1) {
+        // get data from buffer
+        if (sbuffer_read(args.buffer, &received_data) == 0) { // TODO: make an sbuffer function that reads instead of removing and changes a flag
+            if (received_data.id != 0) {
+                //printf("%lu: %d, %lf, %ld\n", pthread_self(), received_data.id, received_data.value, received_data.ts);
 
-        //replace id with 0 at end of file and break out of the while loop
-        if (feof(fp_sensor_data)) {
-            sensor_data.id = 0;
-            break;
-        }
 
-        // add values from binary file to the dplist
-        index_dpl = dpl_get_index_of_element(list, &sensor_data);
-        //printf("%d\n", index_dpl);
-        if (index_dpl == -1) {
-            // values not in .map file should be dropped, with a log message saying so
-            fprintf(stderr, "Sensor with that ID not in list\n");
-        } else {
-            //temp_node = dpl_get_reference_at_index(list, index_dpl);
-            temp_node = (my_element_t *)dpl_get_element_at_index(list, index_dpl);
-            temp_node->last_modified = sensor_data.ts;
-            if (++temp_node->ra_lastadded >= RUN_AVG_LENGTH) {
-                temp_node->ra_lastadded = 0;
+                // add values to the dplist
+                index_dpl = dpl_get_index_of_element(list, &received_data);
+                //printf("%d\n", index_dpl);
+                if (index_dpl == -1) {
+                    // values not in .map file should be dropped, with a log message saying so
+                    sprintf(logmsg, "Received sensor data with invalid sensor node ID %u", received_data.id);
+                    write_to_log_process(logmsg);
+                } else {
+                    //temp_node = dpl_get_reference_at_index(list, index_dpl);
+                    temp_node = (my_element_t *) dpl_get_element_at_index(list, index_dpl);
+                    temp_node->last_modified = received_data.ts;
+                    if (++temp_node->ra_lastadded >= RUN_AVG_LENGTH) {
+                        temp_node->ra_lastadded = 0;
+                    }
+                    temp_node->running_avg[temp_node->ra_lastadded] = received_data.value;
+                }
+            } else {
+                break;
             }
-            temp_node->running_avg[temp_node->ra_lastadded] = sensor_data.value;
-
         }
     }
+    return 0;
 }
 
 void datamgr_free() {

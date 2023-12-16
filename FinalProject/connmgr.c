@@ -1,14 +1,7 @@
 
 // based on clab6/plab3
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <inttypes.h>
-#include <pthread.h>
 #include "connmgr.h"
-#include "config.h"
-#include "lib/tcpsock.h"
-
 
 int connmgr(connmgr_args_t args) {
     tcpsock_t *server, *client;
@@ -46,27 +39,33 @@ int connmgr(connmgr_args_t args) {
     return 0;
 }
 
-int connection(tcpsock_t *client) {
+int connection(connection_params_t params) {
     int bytes, result;
+    int i = 0;
     sensor_data_t data;
-
-    // write to log
     char logmsg[50];
-    sprintf(logmsg, "Sensor node %u has opened a new connection", data.id);
-    write_to_log_process(logmsg);
 
     printf("%lu\n", pthread_self()); // Print thread id for debugging reasons
     do {
         // read sensor ID
         bytes = sizeof(data.id);
-        result = tcp_receive(client, (void *) &data.id, &bytes);
+        result = tcp_receive(params.client, (void *) &data.id, &bytes);
+
+        if (i == 0) { // only on first loop
+            // write to log
+            sprintf(logmsg, "Sensor node %u has opened a new connection", data.id);
+            write_to_log_process(logmsg);
+            i++;
+        }
+
         // read temperature
         bytes = sizeof(data.value);
-        result = tcp_receive(client, (void *) &data.value, &bytes);
+        result = tcp_receive(params.client, (void *) &data.value, &bytes);
         // read timestamp
         bytes = sizeof(data.ts);
-        result = tcp_receive(client, (void *) &data.ts, &bytes);
+        result = tcp_receive(params.client, (void *) &data.ts, &bytes);
         if ((result == TCP_NO_ERROR) && bytes) {
+            sbuffer_insert(params.buffer, &data);
             printf("sensor id = %" PRIu16 " - temperature = %g - timestamp = %ld\n", data.id, data.value,
                    (long int) data.ts);
         }
@@ -81,7 +80,7 @@ int connection(tcpsock_t *client) {
     sprintf(logmsg, "Sensor node %u has closed the connection", data.id);
     write_to_log_process(logmsg);
 
-    tcp_close(&client);
+    tcp_close(&params.client);
     return 0;
 }
 

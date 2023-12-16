@@ -1,6 +1,9 @@
 #ifndef _DPLIST_H_
 #define _DPLIST_H_
 
+#include <stdlib.h>
+#include <assert.h>
+
 typedef enum {
     false, true
 } bool; // or use C99 #include <stdbool.h>

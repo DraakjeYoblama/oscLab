@@ -6,7 +6,11 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
+#include "sbuffer.h"
 #include "config.h"
+#include "lib/dplist.h"
+
 
 #ifndef RUN_AVG_LENGTH
 #define RUN_AVG_LENGTH 5
@@ -40,17 +44,20 @@ typedef struct
     time_t last_modified;
 } my_element_t;
 
+typedef struct datamgr_args {
+    char* sensor_map;
+    sbuffer_t* buffer;
+} datamgr_args_t;
+
 void *element_copy(void *element);
 void element_free(void **element);
 int element_compare(void *x, void *y);
 
 /**
- *  This method holds the core functionality of your datamgr. It takes in 2 file pointers to the sensor files and parses them.
- *  When the method finishes all data should be in the internal pointer list and all log messages should be printed to stderr.
- *  \param fp_sensor_map file pointer to the map file
- *  \param fp_sensor_data file pointer to the binary data file
+ *  This method holds the core functionality of your datamgr. It takes in a file pointers to the .map file and parses it.
+ *  \param args contains the name of the .map file and a pointer to the shared buffer
  */
-void datamgr_parse_sensor_files(FILE *fp_sensor_map, FILE *fp_sensor_data);
+int datamgr(datamgr_args_t args);
 
 /**
  * This method should be called to clean up the datamgr, and to free all used memory.
