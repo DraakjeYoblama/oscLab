@@ -15,7 +15,7 @@ void datamgr_parse_sensor_files(FILE *fp_sensor_map, FILE *fp_sensor_data) {
     temp_element.ra_lastadded = 0;
     temp_element.last_modified = 0;
     for (int i=0; i<RUN_AVG_LENGTH; i++) {
-        temp_element.running_avg[i] = 0;
+        temp_element.running_avg[i] = -300;
     }
 
     int index_dpl = 1;
@@ -96,10 +96,19 @@ sensor_value_t datamgr_get_avg(sensor_id_t sensor_id) {
     } else {
         my_element_t* temp_node = (my_element_t *) dpl_get_element_at_index(list, index_dpl);
         for (int i=0; i<RUN_AVG_LENGTH; i++) {
-            average += temp_node->running_avg[i];
+            if (temp_node->running_avg[i] > -275) {
+                average += temp_node->running_avg[i];
+            }
         }
         average = average/RUN_AVG_LENGTH;
     }
+
+    if (average > SET_MAX_TEMP) {
+        printf("It's too warm\n");
+    } else if (average < SET_MIN_TEMP) {
+        printf("It's too cold\n");
+    }
+
     free(vessel_node);
     vessel_node = NULL;
     return average;
