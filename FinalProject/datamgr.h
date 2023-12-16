@@ -1,5 +1,5 @@
 
-// TODO: this file is just copied over from clab4/plab1, make it correct and fix bugs
+// based on clab4/plab1
 
 #ifndef DATAMGR_H_
 #define DATAMGR_H_
@@ -29,6 +29,20 @@
                         exit(EXIT_FAILURE);                         \
                       }                                             \
                     } while(0)
+
+
+typedef struct
+{
+    uint16_t id;
+    uint16_t room_id;
+    double running_avg[RUN_AVG_LENGTH];
+    int ra_lastadded;
+    time_t last_modified;
+} my_element_t;
+
+void *element_copy(void *element);
+void element_free(void **element);
+int element_compare(void *x, void *y);
 
 /**
  *  This method holds the core functionality of your datamgr. It takes in 2 file pointers to the sensor files and parses them.

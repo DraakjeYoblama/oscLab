@@ -1,5 +1,5 @@
 
-// TODO: this file is just copied over from plab1/clab4, make it correct and fix bugs
+// based on plab1/clab4
 
 #include <stdlib.h>
 #include <stdio.h>

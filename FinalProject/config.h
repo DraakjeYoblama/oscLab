@@ -14,5 +14,9 @@ typedef struct {
     sensor_ts_t ts;
 } sensor_data_t;
 
+int write_to_log_process(char *msg);
+int create_log_process();
+int end_log_process();
+
 #endif /* _CONFIG_H_ */
 

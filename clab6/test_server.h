@@ -9,7 +9,7 @@
 #include "lib/tcpsock.h"
 
 int main(int argc, char *argv[]);
-int *connection(tcpsock_t *client);
+int connection(tcpsock_t *client);
 
 
 #endif //CLAB6_TEST_SERVER_H
