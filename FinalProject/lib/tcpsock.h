@@ -8,12 +8,17 @@
 #define MIN_PORT    1024
 #define MAX_PORT    65536
 
+#ifndef TIMEOUT
+#define TIMEOUT     5
+#endif
+
 #define    TCP_NO_ERROR             0
 #define    TCP_SOCKET_ERROR         1   // invalid socket
 #define    TCP_ADDRESS_ERROR        2   // invalid port and/or IP address
 #define    TCP_SOCKOP_ERROR         3   // socket operator (socket, listen, bind, accept,...) error
 #define    TCP_CONNECTION_CLOSED    4   // send/receive indicate connection is closed
 #define    TCP_MEMORY_ERROR         5   // mem alloc error
+#define    TCP_CONNECTION_TIMEOUT   6   // connection is closed due to client timeout
 
 #define MAX_PENDING 10
 

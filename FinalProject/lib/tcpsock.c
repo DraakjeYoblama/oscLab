@@ -201,14 +201,31 @@ int tcp_send(tcpsock_t *socket, void *buffer, int *buf_size) {
 }
 
 int tcp_receive(tcpsock_t *socket, void *buffer, int *buf_size) {
+    fd_set read_fd;
+    struct timeval timeout;
     TCP_ERR_HANDLER(socket == NULL, return TCP_SOCKET_ERROR);
     TCP_ERR_HANDLER(socket->cookie != MAGIC_COOKIE, return TCP_SOCKET_ERROR);
-    if ((buffer == NULL) || (buf_size == 0))  //nothing to read
+
+    FD_ZERO(&read_fd);
+    FD_SET(socket->sd, &read_fd);
+
+    timeout.tv_sec = TIMEOUT;
+    timeout.tv_usec = 0;
+
+    int activity = select(socket->sd + 1, &read_fd, NULL, NULL, &timeout);
+
+    if (activity > 0 && FD_ISSET(socket->sd, &read_fd)) {
+        recv(socket->sd, buffer, *buf_size, 0); // buffer value received
+    } else if (activity == 0) {
+        return TCP_CONNECTION_TIMEOUT; // no buffer value received within set time
+    }
+
+    /*if ((buffer == NULL) || (buf_size == 0))  //nothing to read
     {
         *buf_size = 0;
         return TCP_NO_ERROR;
     }
-    *buf_size = recv(socket->sd, buffer, *buf_size, 0);
+    *buf_size = recv(socket->sd, buffer, *buf_size, 0);*/
     TCP_DEBUG_PRINTF(*buf_size == 0, "Recv() : no connection to peer\n");
     TCP_ERR_HANDLER(*buf_size == 0, return TCP_CONNECTION_CLOSED);
     TCP_DEBUG_PRINTF((*buf_size < 0) && (errno == ENOTCONN), "Recv() : no connection to peer\n");
