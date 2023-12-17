@@ -1,6 +1,3 @@
-#include <stdlib.h>
-#include <pthread.h>
-#include <unistd.h>
 #include "sbuffer.h"
 
 /**
@@ -66,7 +63,7 @@ int sbuffer_remove(sbuffer_t *buffer, sensor_data_t *data) {
         pthread_mutex_unlock(&buffermutex);
         return SBUFFER_FAILURE;
     }
-    if (buffer->head == NULL) {
+    while (buffer->head == NULL) {
         pthread_cond_wait(&filled, &buffermutex);
         //pthread_mutex_unlock(&buffermutex);
         //return SBUFFER_NO_DATA;
@@ -115,7 +112,9 @@ int sbuffer_insert(sbuffer_t *buffer, sensor_data_t *data) {
     return SBUFFER_SUCCESS;
 }
 
-int sbuffer_cond() {
-    pthread_cond_signal(&filled);
+int sbuffer_cond(int amount) {
+    for (int i = 0; i<amount; i++) {
+        pthread_cond_signal(&filled);
+    }
     return SBUFFER_SUCCESS;
 }

@@ -59,6 +59,7 @@ void datamgr_parse_sensor_files(FILE *fp_sensor_map, FILE *fp_sensor_data) {
             }
             temp_node->running_avg[temp_node->ra_lastadded] = sensor_data.value;
 
+
         }
     }
 }
@@ -103,6 +104,7 @@ sensor_value_t datamgr_get_avg(sensor_id_t sensor_id) {
         average = average/RUN_AVG_LENGTH;
     }
 
+    printf("Temp: %lf\n", average);
     if (average > SET_MAX_TEMP) {
         printf("It's too warm\n");
     } else if (average < SET_MIN_TEMP) {

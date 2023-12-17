@@ -66,11 +66,9 @@ int sbuffer_remove(sbuffer_t *buffer, sensor_data_t *data) {
         pthread_mutex_unlock(&buffermutex);
         return SBUFFER_FAILURE;
     }
-    if (buffer->head == NULL) { // TODO: make this block if flag is not set
-        // TODO: make this fuction read the first buffer entry without this flag set
+    while (buffer->head == NULL) { // TODO: make this block if the stage counter is too low
+        // TODO: make this fuction read the first buffer entry with a high enough stage counter
         pthread_cond_wait(&filled, &buffermutex);
-        //pthread_mutex_unlock(&buffermutex); // TODO: fix blocking
-        //return SBUFFER_NO_DATA;
     }
     *data = buffer->head->data;
     dummy = buffer->head;
@@ -89,15 +87,15 @@ int sbuffer_remove(sbuffer_t *buffer, sensor_data_t *data) {
     return SBUFFER_SUCCESS;
 }
 
-int sbuffer_read(sbuffer_t *buffer, sensor_data_t *data) { // TODO: make this change a flag or something
+int sbuffer_read(sbuffer_t *buffer, sensor_data_t *data) { // TODO: make this increase a stage counter
     pthread_mutex_lock(&buffermutex);
     if (buffer == NULL) {
         pthread_mutex_unlock(&buffermutex);
         return SBUFFER_FAILURE;
     }
-    if (buffer->head == NULL) {
+    while (buffer->head == NULL) {
         pthread_cond_wait(&filled, &buffermutex);
-        //pthread_mutex_unlock(&buffermutex); // TODO: fix blocking
+        //pthread_mutex_unlock(&buffermutex);
         //return SBUFFER_NO_DATA;
     }
     *data = buffer->head->data;
@@ -136,7 +134,9 @@ int sbuffer_insert(sbuffer_t *buffer, sensor_data_t *data) {
     return SBUFFER_SUCCESS;
 }
 
-int sbuffer_cond() {
-    pthread_cond_signal(&filled);
+int sbuffer_cond(int amount) {
+    for (int i = 0; i<amount; i++) {
+        pthread_cond_signal(&filled);
+    }
     return SBUFFER_SUCCESS;
 }

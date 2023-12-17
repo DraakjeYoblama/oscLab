@@ -35,6 +35,7 @@ int datamgr(datamgr_args_t args) {
     // Part 2: fill dplist with data from buffer
 
     sensor_data_t received_data; //defined in config.h
+    double average;
     my_element_t* temp_node;
     char logmsg[60];
     // index_dpl gets reused, how fun
@@ -62,14 +63,19 @@ int datamgr(datamgr_args_t args) {
                     }
                     temp_node->running_avg[temp_node->ra_lastadded] = received_data.value;
 
-                    /*datamgr_get_avg(received_data.id); // TODO: log too high and low temperatures
-                    if (average > SET_MAX_TEMP) {
-                        printf("It's too warm\n");
-                    } else if (average < SET_MIN_TEMP) {
-                        printf("It's too cold\n");
-                    }*/
+                    average = datamgr_get_avg(received_data.id); // log too high and low temperatures
+                    if (average > SET_MAX_TEMP) { // too hot
+                        sprintf(logmsg, "Sensor node %u reports it’s too hot (avg temp = %lf)", received_data.id, average);
+                        write_to_log_process(logmsg);
+                        printf("%s", logmsg);
+                    } else if (average < SET_MIN_TEMP) { // too cold
+                        sprintf(logmsg, "Sensor node %u reports it’s too cold (avg temp = %lf)", received_data.id, average);
+                        write_to_log_process(logmsg);
+                        printf("%s", logmsg);
+                    }
                 }
-            } else {
+            } else { // end of buffer
+                datamgr_free();
                 break;
             }
         }
@@ -85,17 +91,17 @@ void datamgr_free() {
 uint16_t datamgr_get_room_id(sensor_id_t sensor_id) {
     int index_dpl;
     uint16_t temp_room = 0;
-    my_element_t* vessel_node = malloc(sizeof(my_element_t)); // it's only a vessel to move the sensor id
-    vessel_node->id = sensor_id;
-    index_dpl = dpl_get_index_of_element(list, vessel_node);
+    my_element_t* id_node = malloc(sizeof(my_element_t)); // it's only a vessel to move the sensor id
+    id_node->id = sensor_id;
+    index_dpl = dpl_get_index_of_element(list, id_node);
     if (index_dpl == -1) {
         fprintf(stderr, "Sensor with that ID not in list\n");
     } else {
         my_element_t* temp_node = (my_element_t *) dpl_get_element_at_index(list, index_dpl);
         temp_room = temp_node->room_id;
     }
-    free(vessel_node);
-    vessel_node = NULL;
+    free(id_node);
+    id_node = NULL;
     return temp_room;
 }
 
