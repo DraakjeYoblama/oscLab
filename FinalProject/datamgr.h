@@ -54,40 +54,30 @@ void element_free(void **element);
 int element_compare(void *x, void *y);
 
 /**
- *  This method holds the core functionality of your datamgr. It takes in a file pointers to the .map file and parses it.
+ *  This method holds the core functionality of datamgr.
  *  \param args contains the name of the .map file and a pointer to the shared buffer
  */
 int datamgr(datamgr_args_t args);
 
 /**
  * This method should be called to clean up the datamgr, and to free all used memory.
- * After this, any call to datamgr_get_room_id, datamgr_get_avg, datamgr_get_last_modified or datamgr_get_total_sensors will not return a valid result
+ * \param sensor_map .map file to initiate dplist from
+ */
+int datamgr_parse_map(char* sensor_map);
+
+/**
+ * This method should be called to clean up the datamgr, and to free all used memory.
+ * After this, any call to datamgr_get_avg or datamgr_get_total_sensors will not return a valid result
  */
 void datamgr_free();
 
 /**
- * Gets the room ID for a certain sensor ID
- * Use ERROR_HANDLER() if sensor_id is invalid
- * \param sensor_id the sensor id to look for
- * \return the corresponding room id
- */
-uint16_t datamgr_get_room_id(sensor_id_t sensor_id);
-
-/**
- * Gets the running AVG of a certain senor ID (if less then RUN_AVG_LENGTH measurements are recorded the avg is 0)
- * Use ERROR_HANDLER() if sensor_id is invalid
- * \param sensor_id the sensor id to look for
+ * Gets the running AVG of a certain sensor ID
+ * Values that are physically impossible (below 0K) are not counted
+ * \param node the sensor node to check the average temperature for
  * \return the running AVG of the given sensor
  */
-sensor_value_t datamgr_get_avg(sensor_id_t sensor_id);
-
-/**
- * Returns the time of the last reading for a certain sensor ID
- * Use ERROR_HANDLER() if sensor_id is invalid
- * \param sensor_id the sensor id to look for
- * \return the last modified timestamp for the given sensor
- */
-time_t datamgr_get_last_modified(sensor_id_t sensor_id);
+sensor_value_t datamgr_get_avg(my_element_t* node);
 
 /**
  *  Return the total amount of unique sensor ID's recorded by the datamgr
