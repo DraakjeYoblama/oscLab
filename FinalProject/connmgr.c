@@ -5,6 +5,7 @@
 
 int connmgr(connmgr_args_t args) {
     tcpsock_t *server, *client;
+
     int conn_counter = 0;
 
     if(args.argc < 3) {
@@ -17,7 +18,7 @@ int connmgr(connmgr_args_t args) {
 
     pthread_t thread_id[MAX_CONN];
 
-    printf("Test server is started\n");
+    printf("Server started\n");
     if (tcp_passive_open(&server, PORT) != TCP_NO_ERROR) exit(EXIT_FAILURE);
     do {
         if (tcp_wait_for_connection(server, &client) != TCP_NO_ERROR) exit(EXIT_FAILURE);
@@ -34,18 +35,24 @@ int connmgr(connmgr_args_t args) {
     for (int i=0; i<MAX_CONN; i++) { // Wait for every thread to end
         pthread_join(thread_id[i], NULL);
     }
+
+    // indicate end of sbuffer
+    sensor_data_t data;
+    data.id = 0;
+    sbuffer_insert(args.buffer, &data, 0);
+
     if (tcp_close(&server) != TCP_NO_ERROR) exit(EXIT_FAILURE);
     printf("Test server is shutting down\n");
     return 0;
 }
 
-int connection(connection_params_t params) { // TODO: implement disconnect after timeout
+int connection(connection_params_t params) {
     int bytes, result;
     int i = 0;
     sensor_data_t data;
-    char logmsg[50];
+    char logmsg[60];
 
-    printf("%lu\n", pthread_self()); // Print thread id for debugging reasons
+    //printf("%lu\n", pthread_self()); // Print thread id for debugging reasons
     do {
         // read sensor ID
         bytes = sizeof(data.id);
@@ -70,15 +77,17 @@ int connection(connection_params_t params) { // TODO: implement disconnect after
                    (long int) data.ts);
         }
     } while (result == TCP_NO_ERROR);
-    if (result == TCP_CONNECTION_CLOSED) {
-        printf("Peer has closed connection\n");
-    } else {
-        printf("Error occured on connection to peer\n");
-    }
 
     // write to log
-    sprintf(logmsg, "Sensor node %u has closed the connection", data.id);
+    if (result == TCP_CONNECTION_CLOSED) {
+        sprintf(logmsg, "Sensor node %u has closed the connection", data.id);
+    } else if (result == TCP_CONNECTION_TIMEOUT) {
+        sprintf(logmsg, "Sensor node %u has timed out, connection closed", data.id);
+    } else {
+        sprintf(logmsg, "Error connecting to sensor node %u, connection closed", data.id);
+    }
     write_to_log_process(logmsg);
+    printf("%s", logmsg);
 
     tcp_close(&params.client);
     return 0;
