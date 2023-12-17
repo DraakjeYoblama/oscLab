@@ -1,6 +1,9 @@
 #ifndef _SBUFFER_H_
 #define _SBUFFER_H_
 
+#include <stdlib.h>
+#include <pthread.h>
+#include <unistd.h>
 #include "config.h"
 
 #define SBUFFER_FAILURE -1
@@ -40,6 +43,6 @@ int sbuffer_remove(sbuffer_t *buffer, sensor_data_t *data);
 */
 int sbuffer_insert(sbuffer_t *buffer, sensor_data_t *data);
 
-int sbuffer_cond();
+int sbuffer_cond(int amount);
 
 #endif  //_SBUFFER_H_

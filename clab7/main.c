@@ -48,8 +48,7 @@ int main() {
         usleep(10000); //10 millisec
     }
 
-    sbuffer_cond();
-    sbuffer_cond();
+    sbuffer_cond(2);
     pthread_join(thread1, NULL);
     pthread_join(thread2, NULL);
 
@@ -73,7 +72,7 @@ void *reader(void* buffer) {
 
             // write data to sensor_data_out.csv
             if (received_data.id != 0) {
-                //printf("%lu: %d, %lf, %ld\n", pthread_self(), received_data.id, received_data.value, received_data.ts);
+                printf("%lu: %d, %lf, %ld\n", pthread_self(), received_data.id, received_data.value, received_data.ts);
 
                 fprintf(csv, "%d, %lf, %ld\n", received_data.id, received_data.value, received_data.ts);
             } else {
