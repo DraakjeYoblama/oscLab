@@ -18,7 +18,7 @@ void datamgr_parse_sensor_files(FILE *fp_sensor_map, FILE *fp_sensor_data) {
         temp_element.running_avg[i] = -300;
     }
 
-    int index_dpl = 1;
+    int index_dpl = 0;
     while (fgets(line, sizeof(line), fp_sensor_map)) {
         if (sscanf(line, "%hd %hd", &temp_element.room_id, &temp_element.id) == 2) {
             dpl_insert_at_index(list, &temp_element, index_dpl, true);
