@@ -39,7 +39,7 @@ int connmgr(connmgr_args_t args) {
     return 0;
 }
 
-int connection(connection_params_t params) { // TODO: implement disconnect
+int connection(connection_params_t params) { // TODO: implement disconnect after timeout
     int bytes, result;
     int i = 0;
     sensor_data_t data;
@@ -65,7 +65,7 @@ int connection(connection_params_t params) { // TODO: implement disconnect
         bytes = sizeof(data.ts);
         result = tcp_receive(params.client, (void *) &data.ts, &bytes);
         if ((result == TCP_NO_ERROR) && bytes) {
-            sbuffer_insert(params.buffer, &data);
+            sbuffer_insert(params.buffer, &data, 0);
             printf("sensor id = %" PRIu16 " - temperature = %g - timestamp = %ld\n", data.id, data.value,
                    (long int) data.ts);
         }

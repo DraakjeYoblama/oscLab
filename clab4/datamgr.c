@@ -88,7 +88,7 @@ uint16_t datamgr_get_room_id(sensor_id_t sensor_id) {
 
 sensor_value_t datamgr_get_avg(sensor_id_t sensor_id) {
     int index_dpl;
-    my_element_t* vessel_node = malloc(sizeof(my_element_t)); // TODO: malloc needs free()
+    my_element_t* vessel_node = malloc(sizeof(my_element_t));
     double average = 0;
     vessel_node->id = sensor_id;
     index_dpl = dpl_get_index_of_element(list, vessel_node);
@@ -119,7 +119,7 @@ sensor_value_t datamgr_get_avg(sensor_id_t sensor_id) {
 time_t datamgr_get_last_modified(sensor_id_t sensor_id) {
     int index_dpl;
     time_t temp_time = 0;
-    my_element_t* vessel_node = malloc(sizeof(my_element_t)); // TODO: malloc needs free()
+    my_element_t* vessel_node = malloc(sizeof(my_element_t));
     vessel_node->id = sensor_id;
     index_dpl = dpl_get_index_of_element(list, vessel_node);
     if (index_dpl == -1) {

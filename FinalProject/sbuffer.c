@@ -9,6 +9,7 @@
 typedef struct sbuffer_node {
     struct sbuffer_node *next;  /**< a pointer to the next node*/
     sensor_data_t data;         /**< a structure containing the data */
+    int stage;                  /**< indicator of how many times the node has been read = what stage of the process it is on */
 } sbuffer_node_t;
 
 /**
@@ -20,11 +21,12 @@ struct sbuffer {
 };
 
 pthread_mutex_t buffermutex;
-pthread_cond_t filled;
+pthread_cond_t filled, updated;
 
 int sbuffer_init(sbuffer_t **buffer) {
     pthread_mutex_init(&buffermutex, NULL);
     pthread_cond_init(&filled, NULL);
+    pthread_cond_init(&updated, NULL);
     *buffer = malloc(sizeof(sbuffer_t));
     if (*buffer == NULL) return SBUFFER_FAILURE;
     (*buffer)->head = NULL;
@@ -33,8 +35,8 @@ int sbuffer_init(sbuffer_t **buffer) {
 }
 
 int sbuffer_free(sbuffer_t **buffer) {
-    pthread_mutex_lock(&buffermutex);
     sbuffer_node_t *dummy;
+    pthread_mutex_lock(&buffermutex);
     if ((buffer == NULL) || (*buffer == NULL)) {
         pthread_mutex_unlock(&buffermutex);
         return SBUFFER_FAILURE;
@@ -59,16 +61,16 @@ int sbuffer_free(sbuffer_t **buffer) {
     return SBUFFER_SUCCESS;
 }
 
-int sbuffer_remove(sbuffer_t *buffer, sensor_data_t *data) {
-    pthread_mutex_lock(&buffermutex);
+int sbuffer_remove(sbuffer_t *buffer, sensor_data_t *data, int stage) {
     sbuffer_node_t *dummy;
+    pthread_mutex_lock(&buffermutex);
     if (buffer == NULL) {
         pthread_mutex_unlock(&buffermutex);
         return SBUFFER_FAILURE;
     }
-    while (buffer->head == NULL) { // TODO: make this block if the stage counter is too low
-        // TODO: make this fuction read the first buffer entry with a high enough stage counter
-        pthread_cond_wait(&filled, &buffermutex);
+    while (buffer->head == NULL || buffer->head->stage != stage-1) {
+        // block if head is null or node is at the wrong stage
+        pthread_cond_wait(&updated, &buffermutex);
     }
     *data = buffer->head->data;
     dummy = buffer->head;
@@ -87,29 +89,39 @@ int sbuffer_remove(sbuffer_t *buffer, sensor_data_t *data) {
     return SBUFFER_SUCCESS;
 }
 
-int sbuffer_read(sbuffer_t *buffer, sensor_data_t *data) { // TODO: make this increase a stage counter
+int sbuffer_read(sbuffer_t *buffer, sensor_data_t *data, int stage) {
+    sbuffer_node_t *dummy;
     pthread_mutex_lock(&buffermutex);
     if (buffer == NULL) {
         pthread_mutex_unlock(&buffermutex);
         return SBUFFER_FAILURE;
     }
-    while (buffer->head == NULL) {
+    while (buffer->head == NULL || buffer->tail->stage != stage-1) {
+        // block if head is null or all nodes are at the wrong stage (if final node is at the wrong stage, all of them are)
         pthread_cond_wait(&filled, &buffermutex);
-        //pthread_mutex_unlock(&buffermutex);
-        //return SBUFFER_NO_DATA;
     }
-    *data = buffer->head->data;
-    if (buffer->head->data.id == 0) //end marker
+    dummy = buffer->head;
+    while (dummy->stage != stage-1) { // read nodes that aren't the first one if the first one already has a high enough stage, to speed things up
+        if (dummy->next == NULL) {
+            pthread_mutex_unlock(&buffermutex);
+            return SBUFFER_FAILURE;
+        }
+        dummy = dummy->next;
+    }
+    dummy->stage++; // increment stage count
+    *data = dummy->data;
+    if (dummy->data.id == 0) //end marker
     {
         // do something when there is no data left?
     }
     pthread_mutex_unlock(&buffermutex);
+    pthread_cond_signal(&updated);
     return SBUFFER_SUCCESS;
 }
 
-int sbuffer_insert(sbuffer_t *buffer, sensor_data_t *data) {
-    pthread_mutex_lock(&buffermutex);
+int sbuffer_insert(sbuffer_t *buffer, sensor_data_t *data, int stage) {
     sbuffer_node_t *dummy;
+    pthread_mutex_lock(&buffermutex);
     if (buffer == NULL) {
         pthread_mutex_unlock(&buffermutex);
         return SBUFFER_FAILURE;
@@ -120,8 +132,9 @@ int sbuffer_insert(sbuffer_t *buffer, sensor_data_t *data) {
         return SBUFFER_FAILURE;
     }
     dummy->data = *data;
+    dummy->stage = stage;
     dummy->next = NULL;
-    if (buffer->tail == NULL) // buffer empty (buffer->head should also be NULL
+    if (buffer->tail == NULL) // buffer empty (buffer->head should also be NULL)
     {
         buffer->head = buffer->tail = dummy;
     } else // buffer not empty

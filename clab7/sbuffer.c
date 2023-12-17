@@ -30,8 +30,8 @@ int sbuffer_init(sbuffer_t **buffer) {
 }
 
 int sbuffer_free(sbuffer_t **buffer) {
-    pthread_mutex_lock(&buffermutex);
     sbuffer_node_t *dummy;
+    pthread_mutex_lock(&buffermutex);
     if ((buffer == NULL) || (*buffer == NULL)) {
         pthread_mutex_unlock(&buffermutex);
         return SBUFFER_FAILURE;
@@ -57,8 +57,8 @@ int sbuffer_free(sbuffer_t **buffer) {
 }
 
 int sbuffer_remove(sbuffer_t *buffer, sensor_data_t *data) {
-    pthread_mutex_lock(&buffermutex);
     sbuffer_node_t *dummy;
+    pthread_mutex_lock(&buffermutex);
     if (buffer == NULL) {
         pthread_mutex_unlock(&buffermutex);
         return SBUFFER_FAILURE;
@@ -86,8 +86,8 @@ int sbuffer_remove(sbuffer_t *buffer, sensor_data_t *data) {
 }
 
 int sbuffer_insert(sbuffer_t *buffer, sensor_data_t *data) {
-    pthread_mutex_lock(&buffermutex);
     sbuffer_node_t *dummy;
+    pthread_mutex_lock(&buffermutex);
     if (buffer == NULL) {
         pthread_mutex_unlock(&buffermutex);
         return SBUFFER_FAILURE;
