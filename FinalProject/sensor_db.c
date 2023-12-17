@@ -15,7 +15,7 @@ int storagemgr(storagemgr_args_t args) {
 
     while (1) {
         // get data from buffer
-        if (sbuffer_remove(args.buffer, &received_data) == 0) {
+        if (sbuffer_remove(args.buffer, &received_data, 2) == 0) {
 
             // write data to sensor_data_out.csv
             if (received_data.id != 0) {
