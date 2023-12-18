@@ -22,9 +22,9 @@ typedef struct storagemgr_args {
 
 /**
  * Removes sensor data from the buffer and writes it to a csv file with name CSV_NAME
- * \param args struct that contains the buffer (and other arguments if necessary)
+ * \param storage_args pointer to a struct that contains the buffer (and other arguments if necessary)
  */
-int storagemgr(storagemgr_args_t args);
+int storagemgr(void* storage_args);
 
 
 #endif /* _SENSOR_DB_H_ */

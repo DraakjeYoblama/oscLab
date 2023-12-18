@@ -3,7 +3,8 @@
 
 #include "sensor_db.h"
 
-int storagemgr(storagemgr_args_t args) {
+int storagemgr(void* storage_args) {
+    storagemgr_args_t* args = (storagemgr_args_t*)storage_args;
     char logmsg[50];
 
     // open csv
@@ -15,7 +16,7 @@ int storagemgr(storagemgr_args_t args) {
 
     while (1) {
         // get data from buffer
-        if (sbuffer_remove(args.buffer, &received_data, 2) == 0) {
+        if (sbuffer_remove(args->buffer, &received_data, 2) == 0) {
 
             // write data to sensor_data_out.csv
             if (received_data.id != 0) {
