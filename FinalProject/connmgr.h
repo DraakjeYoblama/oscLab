@@ -30,9 +30,9 @@ typedef struct client_params {
 
 /**
  * Starts up connections with TCP clients
- * \param args struct that contains the buffer and the arguments passed from main() (and other arguments if necessary)
+ * \param conn_args pointer to a struct that contains the buffer and the arguments passed from main() (and other arguments if necessary)
  */
-int connmgr(connmgr_args_t args);
+int connmgr(void* conn_args);
 
 /**
  * TCP client connection that writes received data to the shared buffer

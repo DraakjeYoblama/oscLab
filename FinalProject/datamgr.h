@@ -58,12 +58,12 @@ int element_compare(void *x, void *y);
  *  Reads data from buffer and stores the latest readings in a dplist
  *  RUN_AVG_LENGTH amount of temperature readings are stored
  *  After adding a reading, the average temperature of that room is calculated and a message might be logged
- * \param args struct that contains the buffer (and other arguments if necessary)
+ * \param data_args pointer to a struct that contains the buffer (and other arguments if necessary)
  */
-int datamgr(datamgr_args_t args);
+int datamgr(void* data_args);
 
 /**
- * This method should be called to clean up the datamgr, and to free all used memory.
+ * Parses the .map file and creates a dplist where every element is a room
  * \param sensor_map .map file to initiate dplist from
  */
 int datamgr_parse_map(char* sensor_map);
@@ -83,7 +83,7 @@ void datamgr_free();
 sensor_value_t datamgr_get_avg(my_element_t* node);
 
 /**
- *  Return the total amount of unique sensor ID's recorded by the datamgr
+ *  Return the total amount of unique sensor IDs recorded by the datamgr
  *  \return the total amount of sensors
  */
 int datamgr_get_total_sensors();

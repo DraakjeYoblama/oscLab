@@ -6,7 +6,8 @@
 
 dplist_t *list;
 
-int datamgr(datamgr_args_t args) {
+int datamgr(void* data_args) {
+    datamgr_args_t* args = (datamgr_args_t*)data_args;
     char logmsg[60];
     // Part 1: make dplist from sensor_map
     list = dpl_create(element_copy, element_free, element_compare);
@@ -22,7 +23,7 @@ int datamgr(datamgr_args_t args) {
 
     while (1) {
         // get data from buffer
-        if (sbuffer_read(args.buffer, &received_data, 1) == 0) {
+        if (sbuffer_read(args->buffer, &received_data, 1) == 0) {
             if (received_data.id != 0) {
                 //printf("%lu: %d, %lf, %ld\n", pthread_self(), received_data.id, received_data.value, received_data.ts);
 
@@ -55,7 +56,7 @@ int datamgr(datamgr_args_t args) {
 }
 
 int datamgr_parse_map(char* sensor_map) {
-    FILE * map = fopen(sensor_map, "r"); // TODO: sensor_map is not a valid string
+    FILE * map = fopen(sensor_map, "r");
 
     char line[12]; // 2x uint16 (max. 5 digits) + space + string terminator = 12 characters
     my_element_t temp_element;

@@ -23,15 +23,6 @@ int logcounter;
 FILE* log_file;
 
 int main(int argc, char *argv[]) {
-    pthread_t connmgr_id, datamgr_id, storagemgr_id;
-    connmgr_args_t conn_args;
-    datamgr_args_t data_args;
-    storagemgr_args_t storage_args;
-
-    // pas arguments to connmgr thread
-    conn_args.argc = argc;
-    conn_args.argv = argv;
-
 
     // create logger child thread
     int result = 0;
@@ -46,15 +37,25 @@ int main(int argc, char *argv[]) {
     }
     write_to_log_process("Log process started");
 
-    // start buffer and set as argument for threads
+    // pass arguments to manager threads
+    connmgr_args_t *conn_args = malloc(sizeof *conn_args);
+    datamgr_args_t *data_args= malloc(sizeof *data_args);
+    storagemgr_args_t *storage_args= malloc(sizeof *storage_args);
+
+    conn_args->argc = argc;
+    conn_args->argv = argv;
+
+    // start buffer and set as argument for manager threads
     sbuffer_t** shared_data = malloc(8);
     sbuffer_init(shared_data);
-    conn_args.buffer = data_args.buffer = storage_args.buffer = *shared_data;
+    conn_args->buffer = data_args->buffer = storage_args->buffer = *shared_data;
+
 
     // Create the manager threads
-    pthread_create(&connmgr_id, NULL, (void*)connmgr, &conn_args);
-    pthread_create(&datamgr_id, NULL, (void*)datamgr, &data_args);
-    pthread_create(&storagemgr_id, NULL, (void*)storagemgr, &storage_args);
+    pthread_t connmgr_id, datamgr_id, storagemgr_id;
+    pthread_create(&connmgr_id, NULL, (void*)connmgr, conn_args);
+    pthread_create(&datamgr_id, NULL, (void*)datamgr, data_args);
+    pthread_create(&storagemgr_id, NULL, (void*)storagemgr, storage_args);
 
 
     // wait for threads to end

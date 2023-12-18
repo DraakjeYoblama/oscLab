@@ -3,18 +3,19 @@
 
 #include "connmgr.h"
 
-int connmgr(connmgr_args_t args) {
+int connmgr(void* conn_args) {
+    connmgr_args_t* args = (connmgr_args_t*)conn_args;
     tcpsock_t *server, *client;
 
     int conn_counter = 0;
 
-    if(args.argc < 3) {
+    if(args->argc < 3) {
         printf("Please provide the right arguments: first the port, then the max nb of clients");
         return -1;
     }
 
-    int MAX_CONN = atoi(args.argv[2]);
-    int PORT = atoi(args.argv[1]);
+    int MAX_CONN = atoi(args->argv[2]);
+    int PORT = atoi(args->argv[1]);
 
     pthread_t thread_id[MAX_CONN];
 
@@ -39,7 +40,7 @@ int connmgr(connmgr_args_t args) {
     // indicate end of sbuffer
     sensor_data_t data;
     data.id = 0;
-    sbuffer_insert(args.buffer, &data, 0);
+    sbuffer_insert(args->buffer, &data, 0);
 
     if (tcp_close(&server) != TCP_NO_ERROR) exit(EXIT_FAILURE);
     printf("Test server is shutting down\n");
