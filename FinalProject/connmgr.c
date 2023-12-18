@@ -3,21 +3,24 @@
 
 #include "connmgr.h"
 
-int connmgr(void* conn_args) {
-    connmgr_args_t* args = (connmgr_args_t*)conn_args;
-    tcpsock_t *server, *client;
-
+int connmgr(void* connmgr_args) {
+    connmgr_args_t* mgr_args = (connmgr_args_t*)connmgr_args;
+    tcpsock_t *server, *client; // TODO: does client need to be client[MAX_CONN]? It seems like data is going to be overwritten
     int conn_counter = 0;
 
-    if(args->argc < 3) {
+    if(mgr_args->argc < 3) {
         printf("Please provide the right arguments: first the port, then the max nb of clients");
         return -1;
     }
 
-    int MAX_CONN = atoi(args->argv[2]);
-    int PORT = atoi(args->argv[1]);
+    int MAX_CONN = atoi(mgr_args->argv[2]);
+    int PORT = atoi(mgr_args->argv[1]);
 
     pthread_t thread_id[MAX_CONN];
+
+    // arguments for the connection with client
+    conn_args_t* cl_args = malloc(sizeof *cl_args);
+    cl_args->buffer = mgr_args->buffer;
 
     write_to_log_process("Server started");
     if (tcp_passive_open(&server, PORT) != TCP_NO_ERROR) exit(EXIT_FAILURE);
@@ -25,9 +28,10 @@ int connmgr(void* conn_args) {
         if (tcp_wait_for_connection(server, &client) != TCP_NO_ERROR) exit(EXIT_FAILURE);
         printf("Incoming client connection\n");
         conn_counter++;
+        cl_args->client = client; // pass client ID to
 
         // Create the thread
-        if (pthread_create(&thread_id[conn_counter-1], NULL, (void *)connection, (void *)client) != 0) {
+        if (pthread_create(&thread_id[conn_counter-1], NULL, (void *)connection, cl_args) != 0) {
             printf("Failed to create thread\n");
             return -1;
         }
@@ -40,14 +44,16 @@ int connmgr(void* conn_args) {
     // indicate end of sbuffer
     sensor_data_t data;
     data.id = 0;
-    sbuffer_insert(args->buffer, &data, 0);
+    sbuffer_insert(mgr_args->buffer, &data, 0);
 
     if (tcp_close(&server) != TCP_NO_ERROR) exit(EXIT_FAILURE);
+    free(cl_args);
     printf("Test server is shutting down\n");
     return 0;
 }
 
-int connection(client_params_t params) {
+int connection(void* connection_args) {
+    conn_args_t* cl_args = (conn_args_t*)connection_args;
     int bytes, result;
     int i = 0;
     sensor_data_t data;
@@ -57,7 +63,7 @@ int connection(client_params_t params) {
     do {
         // read sensor ID
         bytes = sizeof(data.id);
-        result = tcp_receive(params.client, (void *) &data.id, &bytes);
+        result = tcp_receive(cl_args->client, (void *) &data.id, &bytes);
 
         if (i == 0) { // only on first loop
             // write to log
@@ -68,12 +74,12 @@ int connection(client_params_t params) {
 
         // read temperature
         bytes = sizeof(data.value);
-        result = tcp_receive(params.client, (void *) &data.value, &bytes);
+        result = tcp_receive(cl_args->client, (void *) &data.value, &bytes);
         // read timestamp
         bytes = sizeof(data.ts);
-        result = tcp_receive(params.client, (void *) &data.ts, &bytes);
+        result = tcp_receive(cl_args->client, (void *) &data.ts, &bytes);
         if ((result == TCP_NO_ERROR) && bytes) {
-            sbuffer_insert(params.buffer, &data, 0);
+            sbuffer_insert(cl_args->buffer, &data, 0);
             printf("sensor id = %" PRIu16 " - temperature = %g - timestamp = %ld\n", data.id, data.value,
                    (long int) data.ts);
         }
@@ -90,7 +96,7 @@ int connection(client_params_t params) {
     write_to_log_process(logmsg);
     printf("%s", logmsg);
 
-    tcp_close(&params.client);
+    tcp_close(&cl_args->client);
     return 0;
 }
 
