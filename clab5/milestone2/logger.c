@@ -26,7 +26,9 @@ int write_to_log_process(char *msg){
         time_t now;
         char message1[25];
         time(&now);
-        read(fd1[0], message1, 25);
+        if (read(fd1[0], message1, 25) > 0) {
+        fprintf(logname, "%d - %.24s - %s\n", logcounter, ctime(&now), message1);
+    	}
         fprintf(logname, "%d - %.24s - %s\n", logcounter, ctime(&now), message1);
         logcounter++;
     }
@@ -66,9 +68,9 @@ int create_log_process() {
 int end_log_process() {
     if (pid>0) {
         // parent
-        wait(NULL);
         close(fd1[0]);
         close(fd1[1]);
+        wait(NULL);
 
     } else if (pid==0) {
         fclose(logname);

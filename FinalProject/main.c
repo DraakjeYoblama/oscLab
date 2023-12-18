@@ -25,10 +25,11 @@ int main(int argc, char *argv[]) {
     connmgr_args_t conn_args;
     datamgr_args_t data_args;
     storagemgr_args_t storage_args;
+
+    // pas arguments to connmgr thread
     conn_args.argc = argc;
     conn_args.argv = argv;
-    data_args.sensor_map = "room_sensor.map";
-    storage_args.csv_name = "data.csv";
+
 
     // create logger child thread
     int result = 0;
@@ -43,7 +44,7 @@ int main(int argc, char *argv[]) {
     }
     write_to_log_process("Log process started");
 
-    // start buffer
+    // start buffer and set as argument for threads
     sbuffer_t** shared_data = malloc(8);
     sbuffer_init(shared_data);
     conn_args.buffer = data_args.buffer = storage_args.buffer = *shared_data;

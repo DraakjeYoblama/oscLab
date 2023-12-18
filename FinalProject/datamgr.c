@@ -9,7 +9,7 @@ dplist_t *list;
 int datamgr(datamgr_args_t args) {
     // Part 1: make dplist from sensor_map
     list = dpl_create(element_copy, element_free, element_compare);
-    datamgr_parse_map(args.sensor_map);
+    datamgr_parse_map(SENSOR_MAP);
 
 
     // Part 2: fill dplist with data from buffer
@@ -55,7 +55,7 @@ int datamgr(datamgr_args_t args) {
 }
 
 int datamgr_parse_map(char* sensor_map) {
-    FILE * map = fopen(sensor_map, "r");
+    FILE * map = fopen(sensor_map, "r"); // TODO: sensor_map is not a valid string
 
     char line[12]; // 2x uint16 (max. 5 digits) + space + string terminator = 12 characters
     my_element_t temp_element;
