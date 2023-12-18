@@ -31,7 +31,17 @@ int main(int argc, char *argv[]) {
     storage_args.csv_name = "data.csv";
 
     // create logger child thread
+    int result = 0;
     create_log_process();
+    if (pid == 0) {
+        // Child process
+        while (result == 0) {
+            result = log_pipe_to_file();
+        }
+        end_log_process();
+        return 0;
+    }
+    write_to_log_process("Log process started");
 
     // start buffer
     sbuffer_t** shared_data = malloc(8);
@@ -61,22 +71,22 @@ int main(int argc, char *argv[]) {
 
 pthread_mutex_t pipemutex;
 int write_to_log_process(char *msg){
+    pthread_mutex_lock(&pipemutex);
+    write(fd1[1], msg, 60);
+    pthread_mutex_unlock(&pipemutex);
+    return 0;
+}
 
-    if (pid>0) {
-        // parent
-        pthread_mutex_lock(&pipemutex);
-        write(fd1[1], msg, 25);
-        pthread_mutex_unlock(&pipemutex);
-
-    } else if (pid==0) {
-        time_t now;
-        char message1[25];
-        time(&now);
-        read(fd1[0], message1, 25);
+int log_pipe_to_file() {
+    time_t now;
+    char message1[60];
+    time(&now);
+    if (read(fd1[0], message1, 60) > 0) {
         fprintf(logname, "%d - %.24s - %s\n", logcounter, ctime(&now), message1);
-        logcounter++;
+    } else {
+        return 1;
     }
-
+    logcounter++;
     return 0;
 }
 
@@ -105,16 +115,15 @@ int create_log_process() {
         logname = fopen("gateway.log", "a"); // append file
 
     }
-
     return 0;
 }
 
 int end_log_process() {
     if (pid>0) {
         // parent
-        wait(NULL);
         close(fd1[0]);
         close(fd1[1]);
+        wait(NULL);
 
     } else if (pid==0) {
         fclose(logname);
