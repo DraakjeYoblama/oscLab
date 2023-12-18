@@ -18,7 +18,7 @@ int connmgr(connmgr_args_t args) {
 
     pthread_t thread_id[MAX_CONN];
 
-    printf("Server started\n");
+    write_to_log_process("Server started");
     if (tcp_passive_open(&server, PORT) != TCP_NO_ERROR) exit(EXIT_FAILURE);
     do {
         if (tcp_wait_for_connection(server, &client) != TCP_NO_ERROR) exit(EXIT_FAILURE);
