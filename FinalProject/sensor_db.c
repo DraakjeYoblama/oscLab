@@ -7,7 +7,7 @@ int storagemgr(storagemgr_args_t args) {
     char logmsg[50];
 
     // open csv
-    FILE* csv = fopen(args.csv_name, "w");
+    FILE* csv = fopen(CSV_NAME, "w");
     write_to_log_process("A new data.csv file has been created.");
 
     // insert sensor

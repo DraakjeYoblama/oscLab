@@ -24,6 +24,8 @@
 #error SET_MIN_TEMP not set
 #endif
 
+#define SENSOR_MAP  "room_sensor.map"
+
 /*
  * Use ERROR_HANDLER() for handling memory allocation problems, invalid sensor IDs, non-existing files, etc.
  */
@@ -45,7 +47,6 @@ typedef struct
 } my_element_t;
 
 typedef struct datamgr_args {
-    char* sensor_map;
     sbuffer_t* buffer;
 } datamgr_args_t;
 
@@ -54,8 +55,10 @@ void element_free(void **element);
 int element_compare(void *x, void *y);
 
 /**
- *  This method holds the core functionality of datamgr.
- *  \param args contains the name of the .map file and a pointer to the shared buffer
+ *  Reads data from buffer and stores the latest readings in a dplist
+ *  RUN_AVG_LENGTH amount of temperature readings are stored
+ *  After adding a reading, the average temperature of that room is calculated and a message might be logged
+ * \param args struct that contains the buffer (and other arguments if necessary)
  */
 int datamgr(datamgr_args_t args);
 

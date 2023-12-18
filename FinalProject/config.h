@@ -17,13 +17,11 @@ typedef struct {
 /**
  * writes a log message to the pipe, to be processed by log_pipe_to_file
  * \param msg the log message
- * \return 0
  */
 int write_to_log_process(char *msg);
 
 /**
  * Reads the first data in the pipe and writes it to a log file
- * \return 0
  */
 int log_pipe_to_file();
 
@@ -35,7 +33,6 @@ int create_log_process();
 
 /**
  * Ends the log process, function depends on parent or child process calling it
- * \return 0
  */
 int end_log_process();
 

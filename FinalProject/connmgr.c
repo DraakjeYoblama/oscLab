@@ -46,7 +46,7 @@ int connmgr(connmgr_args_t args) {
     return 0;
 }
 
-int connection(connection_params_t params) {
+int connection(client_params_t params) {
     int bytes, result;
     int i = 0;
     sensor_data_t data;

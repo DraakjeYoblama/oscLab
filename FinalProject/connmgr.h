@@ -22,15 +22,23 @@ typedef struct connmgr_args {
     sbuffer_t* buffer;
 } connmgr_args_t;
 
-typedef struct connection_params {
+typedef struct client_params {
     tcpsock_t *client;
     sbuffer_t* buffer;
-} connection_params_t;
+} client_params_t;
 
 
-
+/**
+ * Starts up connections with TCP clients
+ * \param args struct that contains the buffer and the arguments passed from main() (and other arguments if necessary)
+ */
 int connmgr(connmgr_args_t args);
-int connection(connection_params_t params);
+
+/**
+ * TCP client connection that writes received data to the shared buffer
+ * \param params struct that contains the client socket and buffer (and other arguments if necessary)
+ */
+int connection(client_params_t params);
 
 
 #endif //CLAB6_TEST_SERVER_H
