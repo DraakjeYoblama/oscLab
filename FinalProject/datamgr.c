@@ -7,18 +7,18 @@
 dplist_t *list;
 
 int datamgr(datamgr_args_t args) {
+    char logmsg[60];
     // Part 1: make dplist from sensor_map
     list = dpl_create(element_copy, element_free, element_compare);
     datamgr_parse_map(SENSOR_MAP);
+    write_to_log_process("Finished parsing " SENSOR_MAP);
 
 
     // Part 2: fill dplist with data from buffer
 
     sensor_data_t received_data; //defined in config.h
     my_element_t* temp_node;
-    char logmsg[60];
     int index_dpl;
-    // index_dpl gets reused, how fun
 
     while (1) {
         // get data from buffer

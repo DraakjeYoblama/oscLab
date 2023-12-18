@@ -59,6 +59,14 @@ int create_log_process() {
         //child process
         close(fd1[1]);
         logname = fopen("gateway.log", "a"); // append file
+        
+        if (logname == NULL) {
+            return 1;
+        }
+        // make log line buffered, so no logs get lost
+        if (setvbuf(logname, NULL, _IOLBF, 0) != 0) {
+            return 1;
+        }
 
     }
 

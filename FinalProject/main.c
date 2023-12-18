@@ -14,11 +14,13 @@
 #include "datamgr.h"
 #include "sensor_db.h"
 
+#define LOG_FILE_NAME  "gateway.log"
+
 // pipe: reading end is 0, writing end is 1
 int fd1[2];
 pid_t pid;
 int logcounter;
-FILE* logname;
+FILE* log_file;
 
 int main(int argc, char *argv[]) {
     pthread_t connmgr_id, datamgr_id, storagemgr_id;
@@ -50,7 +52,6 @@ int main(int argc, char *argv[]) {
     conn_args.buffer = data_args.buffer = storage_args.buffer = *shared_data;
 
     // Create the manager threads
-
     pthread_create(&connmgr_id, NULL, (void*)connmgr, &conn_args);
     pthread_create(&datamgr_id, NULL, (void*)datamgr, &data_args);
     pthread_create(&storagemgr_id, NULL, (void*)storagemgr, &storage_args);
@@ -66,6 +67,7 @@ int main(int argc, char *argv[]) {
     free(shared_data);
 
     // end logger thread
+    write_to_log_process("Log process closed");
     end_log_process();
     return 0;
 }
@@ -83,7 +85,7 @@ int log_pipe_to_file() {
     char message1[60];
     time(&now);
     if (read(fd1[0], message1, 60) > 0) {
-        fprintf(logname, "%d - %.24s - %s\n", logcounter, ctime(&now), message1);
+        fprintf(log_file, "%d - %.24s - %s\n", logcounter, ctime(&now), message1);
     } else {
         return 1;
     }
@@ -113,7 +115,15 @@ int create_log_process() {
     } else if (pid==0) {
         //child process
         close(fd1[1]);
-        logname = fopen("gateway.log", "a"); // append file
+        log_file = fopen(LOG_FILE_NAME, "a"); // append file
+
+        if (log_file == NULL) {
+            return 1;
+        }
+        // make log line buffered, so no logs get lost
+        if (setvbuf(log_file, NULL, _IOLBF, 0) != 0) {
+            return 1;
+        }
 
     }
     return 0;
@@ -127,7 +137,7 @@ int end_log_process() {
         wait(NULL);
 
     } else if (pid==0) {
-        fclose(logname);
+        fclose(log_file);
         close(fd1[0]);
         close(fd1[1]);
         exit(0);
