@@ -215,17 +215,17 @@ int tcp_receive(tcpsock_t *socket, void *buffer, int *buf_size) {
     int activity = select(socket->sd + 1, &read_fd, NULL, NULL, &timeout);
 
     if (activity > 0 && FD_ISSET(socket->sd, &read_fd)) {
-        recv(socket->sd, buffer, *buf_size, 0); // buffer value received
+        *buf_size = recv(socket->sd, buffer, *buf_size, 0); // buffer value received
     } else if (activity == 0) {
         return TCP_CONNECTION_TIMEOUT; // no buffer value received within set time
     }
 
-    /*if ((buffer == NULL) || (buf_size == 0))  //nothing to read
+    if ((buffer == NULL) || (buf_size == 0))  //nothing to read
     {
         *buf_size = 0;
         return TCP_NO_ERROR;
     }
-    *buf_size = recv(socket->sd, buffer, *buf_size, 0);*/
+    /* *buf_size = recv(socket->sd, buffer, *buf_size, 0);*/
     TCP_DEBUG_PRINTF(*buf_size == 0, "Recv() : no connection to peer\n");
     TCP_ERR_HANDLER(*buf_size == 0, return TCP_CONNECTION_CLOSED);
     TCP_DEBUG_PRINTF((*buf_size < 0) && (errno == ENOTCONN), "Recv() : no connection to peer\n");

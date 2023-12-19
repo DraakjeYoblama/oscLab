@@ -5,10 +5,17 @@
 
 int storagemgr(void* storage_args) {
     storagemgr_args_t* args = (storagemgr_args_t*)storage_args;
-    char logmsg[50];
+    char logmsg[LOG_MESSAGE_LENGTH];
 
     // open csv
-    FILE* csv = fopen(CSV_NAME, "w");
+    FILE* csv = fopen(CSV_NAME, "w"); // create empty file
+    if (csv == NULL) {
+        return 1;
+    }
+    // make file line buffered
+    if (setvbuf(csv, NULL, _IOLBF, 0) != 0) { // TODO: maybe remove this debugging part
+        return 1;
+    }
     write_to_log_process("A new data.csv file has been created.");
 
     // insert sensor

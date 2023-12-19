@@ -15,7 +15,6 @@
 #include "sensor_db.h"
 
 #define LOG_FILE_NAME  "gateway.log"
-#define LOG_MESSAGE_LENGTH  70
 
 // pipe: reading end is 0, writing end is 1
 int fd1[2];
@@ -116,7 +115,7 @@ int create_log_process() {
 
     } else if (pid==0) { //child process
         close(fd1[1]);
-        log_file = fopen(LOG_FILE_NAME, "a"); // append file
+        log_file = fopen(LOG_FILE_NAME, "a"); // append file if it exists
 
         if (log_file == NULL) {
             return 1;

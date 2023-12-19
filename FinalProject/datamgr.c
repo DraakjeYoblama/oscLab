@@ -8,7 +8,7 @@ dplist_t *list;
 
 int datamgr(void* data_args) {
     datamgr_args_t* args = (datamgr_args_t*)data_args;
-    char logmsg[60];
+    char logmsg[LOG_MESSAGE_LENGTH];
     // Part 1: make dplist from sensor_map
     list = dpl_create(element_copy, element_free, element_compare);
     datamgr_parse_map(SENSOR_MAP);
@@ -84,7 +84,7 @@ void datamgr_free() {
 
 sensor_value_t datamgr_get_avg(my_element_t* node) {
     double average = 0;
-    char logmsg[70];
+    char logmsg[LOG_MESSAGE_LENGTH];
     for (int i=0; i<RUN_AVG_LENGTH; i++) {
         if (node->running_avg[i] > -275) { // only count temperature if it is physically possible
             average += node->running_avg[i];
