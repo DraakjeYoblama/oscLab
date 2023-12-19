@@ -54,14 +54,14 @@ int connmgr(void* connmgr_args) {
     for(int i = 0; i < MAX_CONN; i++) {
         free(cl_args[i]);
     }
-    printf("Test server is shutting down\n");
+    write_to_log_process("All connections closed - connection manager finished");
     return 0;
 }
 
 int connection(void* connection_args) {
     conn_args_t* cl_args = (conn_args_t*)connection_args;
     int bytes, result;
-    int i = 0;
+    int id = 0;
     sensor_data_t data;
     char logmsg[LOG_MESSAGE_LENGTH];
 
@@ -71,11 +71,11 @@ int connection(void* connection_args) {
         bytes = sizeof(data.id);
         result = tcp_receive(cl_args->client, (void *) &data.id, &bytes);
 
-        if (i == 0) { // only on first loop
+        if (id == 0) { // only on first loop
             // write to log
-            sprintf(logmsg, "Sensor node %u has opened a new connection", data.id);
+            id = data.id; // a persistent value for the id that doesn't corrupt on timeout
+            sprintf(logmsg, "Sensor node %u has opened a new connection", id);
             write_to_log_process(logmsg);
-            i++;
         }
 
         // read temperature
@@ -91,11 +91,11 @@ int connection(void* connection_args) {
 
     // write to log
     if (result == TCP_CONNECTION_CLOSED) {
-        sprintf(logmsg, "Sensor node %u has closed the connection", data.id);
+        sprintf(logmsg, "Sensor node %u has closed the connection", id);
     } else if (result == TCP_CONNECTION_TIMEOUT) {
-        sprintf(logmsg, "Sensor node %u has timed out, connection closed", data.id);
+        sprintf(logmsg, "Sensor node %u has timed out, connection closed", id);
     } else {
-        sprintf(logmsg, "Error connecting to sensor node %u, connection closed", data.id);
+        sprintf(logmsg, "Error connecting to sensor node %u, connection closed", id);
     }
     write_to_log_process(logmsg);
 
