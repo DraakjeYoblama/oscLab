@@ -16,7 +16,7 @@ int storagemgr(void* storage_args) {
     if (setvbuf(csv, NULL, _IOLBF, 0) != 0) { // TODO: maybe remove this debugging part
         return 1;
     }
-    write_to_log_process("A new data.csv file has been created.");
+    write_to_log_process("A new " CSV_NAME " file has been created.");
 
     // insert sensor
     sensor_data_t received_data;
@@ -40,6 +40,6 @@ int storagemgr(void* storage_args) {
 
     // close csv
     fclose(csv);
-    write_to_log_process("The data.csv file has been closed.");
+    write_to_log_process("The " CSV_NAME " file has been closed.");
     return 0;
 }
