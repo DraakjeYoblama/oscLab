@@ -18,22 +18,23 @@ int connmgr(void* connmgr_args) {
 
     // arguments for the connection with client
     pthread_t thread_id[MAX_CONN];
-    tcpsock_t *client[MAX_CONN];
-    conn_args_t* cl_args = malloc(sizeof *cl_args); // TODO: make this cl_args[MAX_CONN]
-    cl_args->buffer = mgr_args->buffer;
+    conn_args_t* cl_args[MAX_CONN];
+    for(int i = 0; i < MAX_CONN; i++) {
+        cl_args[i] = malloc(sizeof(conn_args_t));
+        cl_args[i]->buffer = mgr_args->buffer;
+    }
 
     // start listening for client connections
     write_to_log_process("Server started");
     if (tcp_passive_open(&server, PORT) != TCP_NO_ERROR) exit(EXIT_FAILURE);
 
-    for (int conn_counter= 0; conn_counter < MAX_CONN; conn_counter++) { // TODO: test this
+    for (int conn_counter= 0; conn_counter < MAX_CONN; conn_counter++) {
         // wait for connection (blocks until connection is found)
-        if (tcp_wait_for_connection(server, &client[conn_counter]) != TCP_NO_ERROR) exit(EXIT_FAILURE);
+        if (tcp_wait_for_connection(server, &cl_args[conn_counter]->client) != TCP_NO_ERROR) exit(EXIT_FAILURE);
         //Incoming client connection
-        cl_args->client = client[conn_counter]; // pass client ID to args
 
         // Create the thread
-        if (pthread_create(&thread_id[conn_counter], NULL, (void *)connection, cl_args) != 0) {
+        if (pthread_create(&thread_id[conn_counter], NULL, (void *)connection, cl_args[conn_counter]) != 0) {
             write_to_log_process("Failed to create connection thread\n");
             return -1;
         }
@@ -49,7 +50,10 @@ int connmgr(void* connmgr_args) {
     sbuffer_insert(mgr_args->buffer, &data, 0);
 
     if (tcp_close(&server) != TCP_NO_ERROR) exit(EXIT_FAILURE);
-    free(cl_args);
+
+    for(int i = 0; i < MAX_CONN; i++) {
+        free(cl_args[i]);
+    }
     printf("Test server is shutting down\n");
     return 0;
 }
