@@ -29,7 +29,6 @@ int datamgr(void* data_args) {
 
                 // add values to the dplist
                 index_dpl = dpl_get_index_of_element(list, &received_data);
-                //printf("%d\n", index_dpl);
                 if (index_dpl == -1) {
                     // values not in .map file should be dropped, with a log message saying so
                     sprintf(logmsg, "Received sensor data with invalid sensor node ID %u", received_data.id);
@@ -85,7 +84,7 @@ void datamgr_free() {
 
 sensor_value_t datamgr_get_avg(my_element_t* node) {
     double average = 0;
-    char logmsg[60];
+    char logmsg[70];
     for (int i=0; i<RUN_AVG_LENGTH; i++) {
         if (node->running_avg[i] > -275) { // only count temperature if it is physically possible
             average += node->running_avg[i];
@@ -95,11 +94,9 @@ sensor_value_t datamgr_get_avg(my_element_t* node) {
     if (average > SET_MAX_TEMP) { // log too hot
         sprintf(logmsg, "Sensor node %u reports it’s too hot (avg temp = %lf)", node->id, average);
         write_to_log_process(logmsg);
-        printf("%s", logmsg);
     } else if (average < SET_MIN_TEMP) { // log too cold
         sprintf(logmsg, "Sensor node %u reports it’s too cold (avg temp = %lf)", node->id, average);
         write_to_log_process(logmsg);
-        printf("%s", logmsg);
     }
     return average;
 }
@@ -133,17 +130,4 @@ int element_compare(void *x, void *y) // returns 0 if id is equal
 {
     return ((((my_element_t *)x)->id < ((my_element_t *)y)->id) ? -1 : (((my_element_t *)x)->id == ((my_element_t *)y)->id) ? 0
                                                                                                                             : 1);
-/*
-    // refactored to be more readable
-    my_element_t *element_x = (my_element_t *)x;
-    my_element_t *element_y = (my_element_t *)y;
-
-    if (element_x->id < element_y->id) {
-        return -1;
-    } else if (element_x->id == element_y->id) {
-        return 0;
-    } else {
-        return 1;
-    }
-*/
 }

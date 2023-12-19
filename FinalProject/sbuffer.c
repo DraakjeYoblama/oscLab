@@ -47,7 +47,7 @@ int sbuffer_free(sbuffer_t **buffer) {
         if ((*buffer)->head == (*buffer)->tail) // buffer has only one node
         {
             (*buffer)->head = (*buffer)->tail = NULL; // remove end marker (0)
-        } else  // buffer has many nodes empty
+        } else  // buffer has many nodes
         {
             (*buffer)->head = (*buffer)->head->next;
         }
@@ -80,7 +80,7 @@ int sbuffer_remove(sbuffer_t *buffer, sensor_data_t *data, int stage) {
     } else if (buffer->head == buffer->tail) // buffer has only one node
     {
         buffer->head = buffer->tail = NULL;
-    } else  // buffer has many nodes empty
+    } else  // buffer has many nodes
     {
         buffer->head = buffer->head->next;
     }
@@ -110,9 +110,9 @@ int sbuffer_read(sbuffer_t *buffer, sensor_data_t *data, int stage) {
     }
     dummy->stage++; // increment stage count
     *data = dummy->data;
-    if (dummy->data.id == 0) //end marker
+    if (dummy->data.id == 0) //end of buffer marker
     {
-        // do something when there is no data left?
+        // do nothing
     }
     pthread_mutex_unlock(&buffermutex);
     pthread_cond_signal(&updated);

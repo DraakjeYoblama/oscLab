@@ -15,6 +15,7 @@
 #include "sensor_db.h"
 
 #define LOG_FILE_NAME  "gateway.log"
+#define LOG_MESSAGE_LENGTH  70
 
 // pipe: reading end is 0, writing end is 1
 int fd1[2];
@@ -35,6 +36,7 @@ int main(int argc, char *argv[]) {
         end_log_process();
         return 0;
     }
+    // parent process
     write_to_log_process("Log process started");
 
     // pass arguments to manager threads
@@ -68,7 +70,7 @@ int main(int argc, char *argv[]) {
     free(shared_data);
 
     // end logger thread
-    write_to_log_process("Log process closed");
+    write_to_log_process("Shutting down - log process closed");
     end_log_process();
     return 0;
 }
@@ -76,16 +78,16 @@ int main(int argc, char *argv[]) {
 pthread_mutex_t pipemutex;
 int write_to_log_process(char *msg){
     pthread_mutex_lock(&pipemutex);
-    write(fd1[1], msg, 60);
+    write(fd1[1], msg, LOG_MESSAGE_LENGTH);
     pthread_mutex_unlock(&pipemutex);
     return 0;
 }
 
 int log_pipe_to_file() {
     time_t now;
-    char message1[60];
+    char message1[LOG_MESSAGE_LENGTH];
     time(&now);
-    if (read(fd1[0], message1, 60) > 0) {
+    if (read(fd1[0], message1, LOG_MESSAGE_LENGTH) > 0) {
         fprintf(log_file, "%d - %.24s - %s\n", logcounter, ctime(&now), message1);
     } else {
         return 1;
@@ -109,12 +111,10 @@ int create_log_process() {
         return 1;
     }
 
-    if (pid>0) {
-        // parent
+    if (pid>0) { // parent
         close(fd1[0]);
 
-    } else if (pid==0) {
-        //child process
+    } else if (pid==0) { //child process
         close(fd1[1]);
         log_file = fopen(LOG_FILE_NAME, "a"); // append file
 
