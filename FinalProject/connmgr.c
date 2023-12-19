@@ -26,13 +26,13 @@ int connmgr(void* connmgr_args) {
     if (tcp_passive_open(&server, PORT) != TCP_NO_ERROR) exit(EXIT_FAILURE);
     do {
         if (tcp_wait_for_connection(server, &client) != TCP_NO_ERROR) exit(EXIT_FAILURE);
-        printf("Incoming client connection\n");
+        //Incoming client connection
         conn_counter++;
         cl_args->client = client; // pass client ID to
 
         // Create the thread
         if (pthread_create(&thread_id[conn_counter-1], NULL, (void *)connection, cl_args) != 0) {
-            printf("Failed to create thread\n");
+            write_to_log_process("Failed to create connection thread\n");
             return -1;
         }
 
@@ -80,8 +80,6 @@ int connection(void* connection_args) {
         result = tcp_receive(cl_args->client, (void *) &data.ts, &bytes);
         if ((result == TCP_NO_ERROR) && bytes) {
             sbuffer_insert(cl_args->buffer, &data, 0);
-            printf("sensor id = %" PRIu16 " - temperature = %g - timestamp = %ld\n", data.id, data.value,
-                   (long int) data.ts);
         }
     } while (result == TCP_NO_ERROR);
 
@@ -94,7 +92,6 @@ int connection(void* connection_args) {
         sprintf(logmsg, "Error connecting to sensor node %u, connection closed", data.id);
     }
     write_to_log_process(logmsg);
-    printf("%s", logmsg);
 
     tcp_close(&cl_args->client);
     return 0;
