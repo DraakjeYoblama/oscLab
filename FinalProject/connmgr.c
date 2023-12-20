@@ -80,12 +80,17 @@ int connection(void* connection_args) {
             sprintf(logmsg, "Sensor node %u has opened a new connection", id);
             write_to_log_process(logmsg);
         }
+        if (result != TCP_NO_ERROR) { // error on receiving id data
+            break;
+        }
+
         // read temperature
         bytes = sizeof(data.value);
         result = tcp_receive(cl_args->client, (void *) &data.value, &bytes);
 
-        if (data.value < 1e-12) { // TODO: sometimes 
-            printf("hiiii");}
+        if (result != TCP_NO_ERROR) { // error on receiving temperature data
+            break;
+        }
 
         // read timestamp
         bytes = sizeof(data.ts);

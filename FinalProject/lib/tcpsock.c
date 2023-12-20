@@ -208,6 +208,7 @@ int tcp_receive(tcpsock_t *socket, void *buffer, int *buf_size) {
     FD_ZERO(&read_fd);
     FD_SET(socket->sd, &read_fd);
 
+    // Timeout
     timeout.tv_sec = TIMEOUT;
     timeout.tv_usec = 0;
 
