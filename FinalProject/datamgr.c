@@ -12,9 +12,13 @@ dplist_t *list;
 int datamgr(void* data_args) {
     datamgr_args_t* args = (datamgr_args_t*)data_args;
     char logmsg[LOG_MESSAGE_LENGTH];
+
     // Part 1: make dplist from sensor_map
     list = dpl_create(element_copy, element_free, element_compare);
-    datamgr_parse_map(SENSOR_MAP);
+    if (datamgr_parse_map(SENSOR_MAP) != 0) {
+        write_to_log_process("Error parsing" SENSOR_MAP ", shutting down data manager");
+        return 1;
+    }
     write_to_log_process("Finished parsing " SENSOR_MAP);
 
 
@@ -58,7 +62,10 @@ int datamgr(void* data_args) {
 }
 
 int datamgr_parse_map(char* sensor_map) {
-    FILE * map = fopen(sensor_map, "r");
+    FILE* map = fopen(sensor_map, "r");
+    if (map == NULL) {
+        return 1;
+    }
 
     char line[12]; // 2x uint16 (max. 5 digits) + space + string terminator = 12 characters
     my_element_t temp_element;
@@ -71,12 +78,21 @@ int datamgr_parse_map(char* sensor_map) {
 
     int index_dpl = 0;
     while (fgets(line, sizeof(line), map)) {
-        if (sscanf(line, "%hd %hd", &temp_element.room_id, &temp_element.id) == 2) {
-            dpl_insert_at_index(list, &temp_element, index_dpl, true);
+        if (sscanf(line, "%hd %hd", &temp_element.room_id, &temp_element.id) != 2) {
+            write_to_log_process("Unexpected line reading from " SENSOR_MAP);
+            // carry on, I guess
+            // return 1;
+        } else {
+            if (dpl_insert_at_index(list, &temp_element, index_dpl, true) == NULL) {
+                return 1;
+            }
         }
         index_dpl++;
     }
-    fclose(map);
+    // close map file
+    if (fclose(map) != 0) {
+        write_to_log_process("Error closing " SENSOR_MAP ", bummer");
+    }
     return 0;
 }
 

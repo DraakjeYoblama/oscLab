@@ -23,7 +23,10 @@ int main(int argc, char *argv[]) {
 
     // create logger child thread
     int result = 0;
-    create_log_process();
+    if (create_log_process() != 0) {
+        printf("Error opening log process, shutting down");
+        return 1;
+    }
     if (pid == 0) {
         // Child process
         while (result == 0) {
@@ -40,11 +43,20 @@ int main(int argc, char *argv[]) {
     datamgr_args_t *data_args= malloc(sizeof *data_args);
     storagemgr_args_t *storage_args= malloc(sizeof *storage_args);
 
+    if (conn_args == NULL || data_args == NULL || storage_args == NULL) {
+        write_to_log_process("Error allocating memory to argument structs, shutting down");
+        return 1;
+    }
+
     conn_args->argc = argc;
     conn_args->argv = argv;
 
     // start buffer and set as argument for manager threads
     sbuffer_t** shared_data = malloc(8);
+    if (shared_data == NULL) {
+        write_to_log_process("Error allocating memory to buffer, shutting down");
+        return 1;
+    }
     sbuffer_init(shared_data);
     conn_args->buffer = data_args->buffer = storage_args->buffer = *shared_data;
 
@@ -91,7 +103,7 @@ int log_pipe_to_file() {
     char message1[LOG_MESSAGE_LENGTH];
     time(&now);
     if (read(fd1[0], message1, LOG_MESSAGE_LENGTH) > 0) {
-        fprintf(log_file, "%d - %.24s - %s\n", logcounter, ctime(&now), message1);
+        fprintf(log_file, "%d %.24s %s\n", logcounter, ctime(&now), message1);
     } else {
         return 1;
     }
@@ -109,7 +121,7 @@ int create_log_process() {
 
     pid = fork();
 
-    if (pid == -1) {
+    if (pid < 0) {
         //error
         return 1;
     }
@@ -141,7 +153,9 @@ int end_log_process() {
         wait(NULL);
 
     } else if (pid==0) {
-        fclose(log_file);
+        if (fclose(log_file) != 0) {
+            printf("Error closing " LOG_FILE_NAME ", bummer");
+        }
         close(fd1[0]);
         close(fd1[1]);
         exit(0);

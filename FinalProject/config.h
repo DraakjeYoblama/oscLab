@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <time.h>
 
-#define LOG_MESSAGE_LENGTH  70
+#define LOG_MESSAGE_LENGTH  90
 
 typedef uint16_t sensor_id_t;
 typedef double sensor_value_t;
