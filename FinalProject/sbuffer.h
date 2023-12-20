@@ -1,11 +1,6 @@
-
-// based on milestone3/clab7/plab4
-
 #ifndef _SBUFFER_H_
 #define _SBUFFER_H_
 
-#include <stdlib.h>
-#include <pthread.h>
 #include "config.h"
 
 #define SBUFFER_FAILURE -1

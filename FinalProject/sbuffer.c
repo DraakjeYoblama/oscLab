@@ -1,6 +1,6 @@
-
-// based on milestone3/clab7/plab4
-
+#include <stdlib.h>
+#include <pthread.h>
+#include "config.h"
 #include "sbuffer.h"
 
 /**

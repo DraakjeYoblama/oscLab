@@ -1,6 +1,3 @@
-
-// based on milestone2/clab5/plab2 (logger.c/.h)
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -59,14 +56,21 @@ int main(int argc, char *argv[]) {
     pthread_create(&storagemgr_id, NULL, (void*)storagemgr, storage_args);
 
 
-    // wait for threads to end
+    // wait for threads to end and free their args
     pthread_join(connmgr_id, NULL);
+    free(conn_args);
+    conn_args = NULL;
     pthread_join(datamgr_id, NULL);
+    free(data_args);
+    data_args = NULL;
     pthread_join(storagemgr_id, NULL);
+    free(storage_args);
+    storage_args = NULL;
 
     // free buffer
     sbuffer_free(shared_data);
     free(shared_data);
+    shared_data = NULL;
 
     // end logger thread
     write_to_log_process("Shutting down - log process closed");
