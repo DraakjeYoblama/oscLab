@@ -1,6 +1,9 @@
-
-// based on clab6/plab3
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include "config.h"
+#include "lib/tcpsock.h"
+#include "sbuffer.h"
 #include "connmgr.h"
 
 int connmgr(void* connmgr_args) {
@@ -77,10 +80,13 @@ int connection(void* connection_args) {
             sprintf(logmsg, "Sensor node %u has opened a new connection", id);
             write_to_log_process(logmsg);
         }
-
         // read temperature
         bytes = sizeof(data.value);
         result = tcp_receive(cl_args->client, (void *) &data.value, &bytes);
+
+        if (data.value < 1e-12) { // TODO: sometimes 
+            printf("hiiii");}
+
         // read timestamp
         bytes = sizeof(data.ts);
         result = tcp_receive(cl_args->client, (void *) &data.ts, &bytes);

@@ -1,6 +1,7 @@
-
-// based on milestone2/clab5/plab2 and milestone3
-
+#include <stdio.h>
+#include <stdlib.h>
+#include "config.h"
+#include "sbuffer.h"
 #include "sensor_db.h"
 
 int storagemgr(void* storage_args) {
@@ -14,7 +15,9 @@ int storagemgr(void* storage_args) {
     }
     // make file line buffered
     if (setvbuf(csv, NULL, _IOLBF, 0) != 0) { // TODO: maybe remove this debugging part
-        return 1;
+        // bummer, no line buffering for you
+        /*fclose(csv);
+        return 1;*/
     }
     write_to_log_process("A new " CSV_NAME " file has been created.");
 

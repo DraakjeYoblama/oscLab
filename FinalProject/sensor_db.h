@@ -1,6 +1,3 @@
-
-// based on milestone2/clab5/plab2
-
 /**
  * \author Bert Lagaisse
  */
@@ -10,10 +7,6 @@
 
 #define CSV_NAME  "data.csv"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include "config.h"
 #include "sbuffer.h"
 
 typedef struct storagemgr_args {

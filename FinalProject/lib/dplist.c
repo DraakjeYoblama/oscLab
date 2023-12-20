@@ -1,6 +1,5 @@
-
-// based on plab1/clab4
-
+#include <stdlib.h>
+#include <assert.h>
 #include "dplist.h"
 
 /*

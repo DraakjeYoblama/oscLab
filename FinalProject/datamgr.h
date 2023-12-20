@@ -1,15 +1,10 @@
-
-// based on clab4/plab1
-
 #ifndef DATAMGR_H_
 #define DATAMGR_H_
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <assert.h>
 #include "sbuffer.h"
 #include "config.h"
-#include "lib/dplist.h"
 
 
 #ifndef RUN_AVG_LENGTH
