@@ -11,19 +11,38 @@ int connmgr(void* connmgr_args) {
     tcpsock_t *server;
 
     if(mgr_args->argc < 3) {
-        printf("Please provide the right arguments: first the port, then the max nb of clients");
+        write_to_log_process("Please provide the right arguments: first the port, then the max nb of clients");
         return -1;
     }
 
-    int MAX_CONN = atoi(mgr_args->argv[2]);
-    int PORT = atoi(mgr_args->argv[1]);
-
+    // convert arguments to int
+    char *end_str;
+    long conv_temp;
+    int PORT, MAX_CONN;
+    conv_temp= strtol(mgr_args->argv[2], &end_str, 10);
+    if (*end_str == '\0' && conv_temp <= 2147483647 && conv_temp >= 0) {
+        MAX_CONN = (int)conv_temp;
+    } else {
+        write_to_log_process("Max connections should be a positive integer, shutting down connection manager");
+        return -1;
+    }
+    conv_temp = strtol(mgr_args->argv[1], &end_str, 10);
+    if (*end_str == '\0' && conv_temp <= MAX_PORT && conv_temp >= MIN_PORT) {
+        PORT = (int)conv_temp;
+    } else {
+        write_to_log_process("No valid port number given, shutting down connection manager");
+        return -1;
+    }
 
     // arguments for the connection with client
     pthread_t thread_id[MAX_CONN];
     conn_args_t* cl_args[MAX_CONN];
     for(int i = 0; i < MAX_CONN; i++) {
         cl_args[i] = malloc(sizeof(conn_args_t));
+        if (cl_args[i] == NULL) {
+            write_to_log_process("Error allocating memory to argument struct, shutting down connection manager");
+            return 1;
+        }
         cl_args[i]->buffer = mgr_args->buffer;
     }
 
@@ -110,7 +129,10 @@ int connection(void* connection_args) {
     }
     write_to_log_process(logmsg);
 
-    tcp_close(&cl_args->client);
+    if (tcp_close(&cl_args->client) != TCP_NO_ERROR) {
+        sprintf(logmsg, "Connection with sensor node %u not closed correctly", id);
+        write_to_log_process(logmsg);
+    }
     return 0;
 }
 

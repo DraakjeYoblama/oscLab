@@ -53,7 +53,7 @@ dplist_t *dpl_insert_at_index(dplist_t *list, void *element, int index, bool ins
     if (list == NULL) return NULL;
 
     list_node = malloc(sizeof(dplist_node_t));
-
+    if (list_node == NULL) return NULL;
 
     if (insert_copy) {
         list_node->element = list->element_copy(element);

@@ -11,6 +11,7 @@ int storagemgr(void* storage_args) {
     // open csv
     FILE* csv = fopen(CSV_NAME, "w"); // create empty file
     if (csv == NULL) {
+        write_to_log_process("Error opening " CSV_NAME ", shutting down storage manager");
         return 1;
     }
     write_to_log_process("A new " CSV_NAME " file has been created.");
@@ -36,7 +37,9 @@ int storagemgr(void* storage_args) {
     }
 
     // close csv
-    fclose(csv);
+    if (fclose(csv) != 0) {
+        write_to_log_process("Error closing " CSV_NAME ", bummer");
+    }
     write_to_log_process("The " CSV_NAME " file has been closed.");
     return 0;
 }
