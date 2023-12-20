@@ -13,12 +13,6 @@ int storagemgr(void* storage_args) {
     if (csv == NULL) {
         return 1;
     }
-    // make file line buffered
-    if (setvbuf(csv, NULL, _IOLBF, 0) != 0) { // TODO: maybe remove this debugging part
-        // bummer, no line buffering for you
-        /*fclose(csv);
-        return 1;*/
-    }
     write_to_log_process("A new " CSV_NAME " file has been created.");
 
     // insert sensor
