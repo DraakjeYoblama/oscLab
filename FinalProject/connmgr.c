@@ -10,11 +10,6 @@ int connmgr(void* connmgr_args) {
     connmgr_args_t* mgr_args = (connmgr_args_t*)connmgr_args;
     tcpsock_t *server;
 
-    if(mgr_args->argc < 3) {
-        write_to_log_process("Please provide the right arguments: first the port, then the max nb of clients");
-        return -1;
-    }
-
     // convert arguments to int
     char *end_str;
     long conv_temp;
@@ -91,7 +86,7 @@ int connection(void* connection_args) {
     do {
         // read sensor ID
         bytes = sizeof(data.id);
-        result = tcp_receive(cl_args->client, (void *) &data.id, &bytes);
+        result = tcp_receive(cl_args->client, (void *) &data.id, &bytes, TIMEOUT);
 
         if (id == 0) { // only on first loop
             // write to log
@@ -105,7 +100,7 @@ int connection(void* connection_args) {
 
         // read temperature
         bytes = sizeof(data.value);
-        result = tcp_receive(cl_args->client, (void *) &data.value, &bytes);
+        result = tcp_receive(cl_args->client, (void *) &data.value, &bytes, TIMEOUT);
 
         if (result != TCP_NO_ERROR) { // error on receiving temperature data
             break;
@@ -113,7 +108,7 @@ int connection(void* connection_args) {
 
         // read timestamp
         bytes = sizeof(data.ts);
-        result = tcp_receive(cl_args->client, (void *) &data.ts, &bytes);
+        result = tcp_receive(cl_args->client, (void *) &data.ts, &bytes, TIMEOUT);
         if ((result == TCP_NO_ERROR) && bytes) {
             sbuffer_insert(cl_args->buffer, &data, 0);
         }

@@ -5,6 +5,14 @@
 #ifndef CLAB6_TEST_SERVER_H
 #define CLAB6_TEST_SERVER_H
 
+#ifndef TIMEOUT
+#define TIMEOUT     5
+#endif
+
+#if TIMEOUT < 0
+#error TIMEOUT must be a positive integer
+#endif
+
 #include "lib/tcpsock.h"
 #include "sbuffer.h"
 

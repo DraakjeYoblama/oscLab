@@ -21,6 +21,12 @@ FILE* log_file;
 
 int main(int argc, char *argv[]) {
 
+    // check if amount of arguments is right
+    if(argc < 3) {
+        printf("Please provide the right arguments: first the port, then the max nb of clients");
+        return 1;
+    }
+
     // create logger child thread
     int result = 0;
     if (create_log_process() != 0) {

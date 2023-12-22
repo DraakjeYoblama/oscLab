@@ -199,7 +199,7 @@ int tcp_send(tcpsock_t *socket, void *buffer, int *buf_size) {
     return TCP_NO_ERROR;
 }
 
-int tcp_receive(tcpsock_t *socket, void *buffer, int *buf_size) {
+int tcp_receive(tcpsock_t *socket, void *buffer, int *buf_size, int timeout_sec) {
     fd_set read_fd;
     struct timeval timeout;
     TCP_ERR_HANDLER(socket == NULL, return TCP_SOCKET_ERROR);
@@ -208,8 +208,11 @@ int tcp_receive(tcpsock_t *socket, void *buffer, int *buf_size) {
     FD_ZERO(&read_fd);
     FD_SET(socket->sd, &read_fd);
 
+    if (timeout_sec < 0) {
+        return TCP_SOCKOP_ERROR;
+    }
     // Timeout
-    timeout.tv_sec = TIMEOUT;
+    timeout.tv_sec = timeout_sec;
     timeout.tv_usec = 0;
 
     int activity = select(socket->sd + 1, &read_fd, NULL, NULL, &timeout);
