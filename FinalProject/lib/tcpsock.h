@@ -8,10 +8,6 @@
 #define MIN_PORT    1024
 #define MAX_PORT    65536
 
-#ifndef TIMEOUT
-#define TIMEOUT     5
-#endif
-
 #define    TCP_NO_ERROR             0
 #define    TCP_SOCKET_ERROR         1   // invalid socket
 #define    TCP_ADDRESS_ERROR        2   // invalid port and/or IP address
@@ -97,9 +93,10 @@ int tcp_send(tcpsock_t *socket, void *buffer, int *buf_size);
  * \param socket the socket where the data needs to be received from
  * \param buffer a pointer to the buffer that can store the data that is received
  * \param buf_size the amount of bytes that will be read from the socket
- * \return TCP_NO_ERROR if no error occurs during execution
+ * \param timeout_sec the amount of time in seconds the socket waits for data
+ * \return TCP_NO_ERROR if no error occurs during execution, TCP_CONNECTION_TIMEOUT if connection times out,
  */
-int tcp_receive(tcpsock_t *socket, void *buffer, int *buf_size);
+int tcp_receive(tcpsock_t *socket, void *buffer, int *buf_size, int timeout_sec);
 
 /**
  * Set '*ip_addr' to the IP address of 'socket' (could be NULL if the IP address is not set)
